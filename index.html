@@ -31,7 +31,6 @@
       min-height: 100vh;
     }
 
-    /* AUTH OVERLAY */
     #authOverlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 13, 20, 0.95);
       z-index: 1000; display: flex; align-items: center; justify-content: center;
@@ -85,12 +84,11 @@
     .game-container {
       width: 100%; max-width: 950px; background: var(--card-bg);
       border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px;
-      padding: 25px; min-height: 480px; display: flex; flex-direction: column;
+      padding: 25px; min-height: 500px; display: flex; flex-direction: column;
       align-items: center; justify-content: center; box-shadow: 0 15px 35px rgba(0,0,0,0.6);
       text-align: center; position: relative;
     }
 
-    /* BET BUTTONS */
     .bet-container { margin-top: 15px; width: 100%; max-width: 600px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
     .bet-preset-buttons { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
     .btn-chip {
@@ -134,7 +132,7 @@
     }
     .slot-symbol { height: 80px; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; }
 
-    /* REAL 3D DICE */
+    /* 3D DICE */
     .dice-scene { width: 80px; height: 80px; perspective: 600px; margin: 20px auto; }
     .cube {
       width: 100%; height: 100%; position: relative; transform-style: preserve-3d;
@@ -174,7 +172,6 @@
       border-radius: 10px; cursor: pointer; font-size: 1.8rem; display: flex; align-items: center; justify-content: center;
     }
 
-    /* WHEEL CONTAINER */
     .wheel-wrapper { position: relative; width: 260px; height: 260px; margin: 10px auto; }
     .wheel-pointer {
       position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 0; height: 0;
@@ -187,7 +184,6 @@
 </head>
 <body>
 
-  <!-- ACCOUNT LOGIN OVERLAY -->
   <div id="authOverlay">
     <div class="auth-box">
       <h2>🎰 Vegas VIP Login</h2>
@@ -228,12 +224,37 @@
     let allAccounts = JSON.parse(localStorage.getItem('casino_all_accounts')) || {};
     
     if (!allAccounts["admin"]) {
-      allAccounts["admin"] = { pin: ".1234MALIK", balance: 1000000, isAdmin: true };
+      allAccounts["admin"] = { pin: ".1234MALIK", balance: 1000000, isAdmin: true, stats: {} };
       localStorage.setItem('casino_all_accounts', JSON.stringify(allAccounts));
     }
 
     let currentAccountName = localStorage.getItem('casino_active_user') || null;
     let currentGame = 'slots';
+
+    function setupCanvasHD(canvas, width, height) {
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      canvas.style.width = width + 'px';
+      canvas.style.height = height + 'px';
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+      return ctx;
+    }
+
+    function recordGameStat(gameId, bet, win) {
+      if (!currentAccountName) return;
+      allAccounts = JSON.parse(localStorage.getItem('casino_all_accounts')) || {};
+      let acc = allAccounts[currentAccountName];
+      if (!acc) return;
+      if (!acc.stats) acc.stats = {};
+      if (!acc.stats[gameId]) acc.stats[gameId] = { plays: 0, totalBet: 0, totalWin: 0 };
+      
+      acc.stats[gameId].plays += 1;
+      acc.stats[gameId].totalBet += bet;
+      acc.stats[gameId].totalWin += win;
+      saveAccounts();
+    }
 
     function handleAuth() {
       const u = document.getElementById('authUsername').value.trim();
@@ -245,14 +266,14 @@
       if (u.toLowerCase() === 'admin') {
         if (!allAccounts['admin'] || allAccounts['admin'].pin !== p) {
           if (p === '.1234MALIK') {
-            allAccounts['admin'] = { pin: '.1234MALIK', balance: allAccounts['admin']?.balance || 1000000, isAdmin: true };
+            allAccounts['admin'] = { pin: '.1234MALIK', balance: allAccounts['admin']?.balance || 1000000, isAdmin: true, stats: allAccounts['admin']?.stats || {} };
           } else {
             alert("Falscher PIN für Admin!"); return;
           }
         }
       } else {
         if (!allAccounts[u]) {
-          allAccounts[u] = { pin: p, balance: 100.00, isAdmin: false };
+          allAccounts[u] = { pin: p, balance: 100.00, isAdmin: false, stats: {} };
         } else {
           if (allAccounts[u].pin !== p) { alert("Falsches Passwort/PIN!"); return; }
         }
@@ -275,6 +296,7 @@
     }
 
     function logoutUser() {
+      if (plinkoLoopId) cancelAnimationFrame(plinkoLoopId);
       currentAccountName = null;
       localStorage.removeItem('casino_active_user');
       document.getElementById('authOverlay').style.display = 'flex';
@@ -317,6 +339,7 @@
     }
 
     function switchGame(gameId) {
+      if (plinkoLoopId) { cancelAnimationFrame(plinkoLoopId); plinkoLoopId = null; }
       currentGame = gameId;
       initNav();
       renderGame();
@@ -396,13 +419,13 @@
 
         case 'plinko':
           container.innerHTML = `
-            <h2>Plinko</h2>
-            <canvas id="plinkoCanvas" width="380" height="280"></canvas>
+            <h2>Plinko (Multi-Kugel Physik)</h2>
+            <canvas id="plinkoCanvas"></canvas>
             ${getBetUI()}
             <button class="action-btn" style="margin-top:15px;" onclick="playPlinko()">Kugel werfen</button>
             <div class="status-msg" id="statusMsg"></div>
           `;
-          drawPlinkoBoard();
+          initPlinkoEngine();
           break;
 
         case 'roulette':
@@ -410,7 +433,7 @@
             <h2>Roulette</h2>
             <div class="wheel-wrapper">
               <div class="wheel-pointer"></div>
-              <canvas id="rouletteCanvas" width="260" height="260"></canvas>
+              <canvas id="rouletteCanvas"></canvas>
             </div>
             ${getBetUI()}
             <div class="controls" style="margin-top:15px;">
@@ -420,21 +443,21 @@
             </div>
             <div class="status-msg" id="statusMsg"></div>
           `;
-          drawRouletteWheel(currentRouletteAngle);
+          initRouletteHD();
           break;
 
         case 'wheel':
           container.innerHTML = `
-            <h2>VIP Glücksrad</h2>
+            <h2>VIP Glücksrad (33% Gewinnchance!)</h2>
             <div class="wheel-wrapper">
               <div class="wheel-pointer"></div>
-              <canvas id="wheelCanvas" width="260" height="260"></canvas>
+              <canvas id="wheelCanvas"></canvas>
             </div>
             ${getBetUI()}
             <button class="action-btn" id="wheelSpinBtn" style="margin-top:15px;" onclick="playWheel()">Rad drehen</button>
             <div class="status-msg" id="statusMsg"></div>
           `;
-          drawVIPWheel(currentWheelAngle);
+          initWheelHD();
           break;
 
         case 'coinflip':
@@ -533,6 +556,7 @@
       }
     }
 
+    /* 1. SLOTS - KORRIGIERTE GEWINNLOGIK LAUT VORGABE */
     let slotReelsCount = 3;
     const slotSymbols = ['🍒', '🍋', '🍊', '💎', '7️⃣', '🔔'];
     function setSlotReels(num) { slotReelsCount = num; renderSlotReels(); }
@@ -567,59 +591,151 @@
         const counts = {};
         finalResults.forEach(s => counts[s] = (counts[s] || 0) + 1);
         let maxMatch = Math.max(...Object.values(counts));
+        let win = 0;
 
-        if (maxMatch === slotReelsCount) {
-          const win = bet * (slotReelsCount === 3 ? 10 : (slotReelsCount === 4 ? 30 : 80));
-          updateBalance(win); showMsg(`🎉 JACKPOT (${maxMatch}x)! Gewinn: +${win.toFixed(2)}€`, 'win');
-        } else if (slotReelsCount === 3 && maxMatch === 3) {
-          const win = bet * 5; updateBalance(win); showMsg(`✨ 3er Match! +${win.toFixed(2)}€`, 'win');
-        } else if (slotReelsCount >= 4 && maxMatch >= 3) {
-          const win = bet * (maxMatch === 3 ? 2 : 10);
-          updateBalance(win); showMsg(`✨ Teiltreffer (${maxMatch}x)! +${win.toFixed(2)}€`, 'win');
+        // GEWINNLOGIK GEWÜNSCHT:
+        // 3 Slots: 2 Symbole = Gewinn!
+        // 4 Slots: 2 Symbole = 1x
+        // 5 Slots: 2 Symbole = 0x, 3 Symbole = 1.5x
+        if (slotReelsCount === 3) {
+          if (maxMatch === 3) win = bet * 10;
+          else if (maxMatch === 2) win = bet * 2;
+        } else if (slotReelsCount === 4) {
+          if (maxMatch === 4) win = bet * 25;
+          else if (maxMatch === 3) win = bet * 5;
+          else if (maxMatch === 2) win = bet * 1;
+        } else if (slotReelsCount === 5) {
+          if (maxMatch === 5) win = bet * 50;
+          else if (maxMatch === 4) win = bet * 10;
+          else if (maxMatch === 3) win = bet * 1.5;
+          else if (maxMatch === 2) win = 0;
+        }
+
+        updateBalance(win);
+        recordGameStat('slots', bet, win);
+
+        if (win > bet) {
+          showMsg(`🎉 GEWINN! +${win.toFixed(2)}€`, 'win');
+        } else if (win === bet) {
+          showMsg(`Einsatz zurück erhalten! (+${win.toFixed(2)}€)`, 'win');
         } else {
           showMsg("Kein Treffer. Verloren!", "lose");
         }
       }, 1500 + slotReelsCount * 400);
     }
 
-    const plinkoMults = [4, 2, 1, 0.5, 0.2, 0.5, 1, 2, 4];
-    const plinkoWeights = [1, 4, 12, 22, 35, 22, 12, 4, 1];
-    function drawPlinkoBoard() {
+    /* 2. PLINKO - ECHTE PHYSIK & COLLISION & MULTI-BALL ENGINE */
+    let plinkoPins = [], plinkoBalls = [], plinkoSlots = [];
+    let plinkoLoopId = null;
+    const plinkoMults = [5, 2, 1.2, 0.5, 0.2, 0.5, 1.2, 2, 5];
+
+    function initPlinkoEngine() {
       const cvs = document.getElementById('plinkoCanvas'); if (!cvs) return;
-      const ctx = cvs.getContext('2d'); ctx.clearRect(0,0,380,280);
-      ctx.fillStyle = '#94a3b8';
-      for (let r = 2; r <= 8; r++) {
-        for (let c = 0; c <= r; c++) {
-          ctx.beginPath(); ctx.arc(190 - (r * 18) + (c * 36), r * 26, 3, 0, Math.PI * 2); ctx.fill();
+      const ctx = setupCanvasHD(cvs, 380, 280);
+      
+      plinkoPins = [];
+      const rows = 7;
+      for (let r = 0; r < rows; r++) {
+        const count = r + 3;
+        const spacing = 32;
+        const startX = 190 - ((count - 1) * spacing) / 2;
+        const y = 40 + r * 28;
+        for (let c = 0; c < count; c++) {
+          plinkoPins.push({ x: startX + c * spacing, y: y, r: 4 });
         }
       }
-      const labels = ['4x', '2x', '1x', '0.5x', '0.2x', '0.5x', '1x', '2x', '4x'];
-      ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
-      for (let i = 0; i < labels.length; i++) {
-        ctx.fillStyle = labels[i] === '4x' ? '#ef4444' : (labels[i] === '2x' ? '#f97316' : (labels[i] === '1x' ? '#f59e0b' : (labels[i] === '0.5x' ? '#10b981' : '#334155')));
-        ctx.fillRect(12 + i * 40, 230, 36, 22); ctx.fillStyle = '#fff'; ctx.fillText(labels[i], 30 + i * 40, 245);
+
+      plinkoSlots = [];
+      const slotWidth = 380 / plinkoMults.length;
+      for (let i = 0; i < plinkoMults.length; i++) {
+        plinkoSlots.push({ x: i * slotWidth, w: slotWidth, mult: plinkoMults[i] });
       }
-    }
-    function playPlinko() {
-      const bet = checkBet(); if (!bet) return; updateBalance(-bet);
-      let totalW = plinkoWeights.reduce((a,b)=>a+b, 0), rand = Math.random() * totalW, targetIdx = 0;
-      for (let i = 0; i < plinkoWeights.length; i++) {
-        if (rand < plinkoWeights[i]) { targetIdx = i; break; } rand -= plinkoWeights[i];
-      }
-      let y = 30, x = 190, targetX = 30 + targetIdx * 40;
-      const t = setInterval(() => {
-        y += 3.5;
-        x += (targetX - x) * 0.04;
-        drawPlinkoBoard();
-        const cvs = document.getElementById('plinkoCanvas'); const ctx = cvs.getContext('2d');
-        ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI*2); ctx.fill();
-        if (y >= 220) {
-          clearInterval(t); const mult = plinkoMults[targetIdx]; const win = bet * mult; updateBalance(win);
-          showMsg(`Plinko ${mult}x! Gewinn: +${win.toFixed(2)}€`, mult >= 1 ? 'win' : 'lose');
-        }
-      }, 25);
+
+      if (!plinkoLoopId) runPlinkoLoop();
     }
 
+    function runPlinkoLoop() {
+      const cvs = document.getElementById('plinkoCanvas');
+      if (!cvs || currentGame !== 'plinko') { plinkoLoopId = null; return; }
+      const ctx = cvs.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      
+      ctx.clearRect(0, 0, 380, 280);
+
+      // Pins zeichnen
+      ctx.fillStyle = '#94a3b8';
+      for (let p of plinkoPins) {
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+      }
+
+      // Slots unten zeichnen
+      for (let i = 0; i < plinkoSlots.length; i++) {
+        let s = plinkoSlots[i];
+        ctx.fillStyle = s.mult >= 2 ? 'rgba(239,68,68,0.3)' : (s.mult >= 1 ? 'rgba(245,158,11,0.3)' : 'rgba(51,65,85,0.3)');
+        ctx.fillRect(s.x + 2, 250, s.w - 4, 25);
+        ctx.fillStyle = '#ffffff'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(s.mult + 'x', s.x + s.w / 2, 266);
+      }
+
+      // Kugeln Physik berechnen & zeichnen
+      for (let i = plinkoBalls.length - 1; i >= 0; i--) {
+        let b = plinkoBalls[i];
+        b.vy += 0.22; // Schwerkraft
+        b.x += b.vx;
+        b.y += b.vy;
+        b.vx *= 0.98; // Luftwiderstand
+
+        // Kollision mit Stiften
+        for (let p of plinkoPins) {
+          let dx = b.x - p.x;
+          let dy = b.y - p.y;
+          let dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < b.r + p.r) {
+            let angle = Math.atan2(dy, dx);
+            let speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy) * 0.6;
+            let scatter = (Math.random() - 0.5) * 0.5;
+            b.vx = Math.cos(angle + scatter) * (speed + 0.8);
+            b.vy = Math.sin(angle + scatter) * (speed + 0.8);
+            b.x = p.x + Math.cos(angle) * (b.r + p.r + 0.5);
+            b.y = p.y + Math.sin(angle) * (b.r + p.r + 0.5);
+          }
+        }
+
+        // Wand-Kollision
+        if (b.x - b.r < 5) { b.x = 5 + b.r; b.vx *= -0.5; }
+        if (b.x + b.r > 375) { b.x = 375 - b.r; b.vx *= -0.5; }
+
+        // Kugel im Zielunten angekommen
+        if (b.y >= 245) {
+          let slotIdx = Math.floor(b.x / (380 / plinkoMults.length));
+          slotIdx = Math.max(0, Math.min(plinkoMults.length - 1, slotIdx));
+          let mult = plinkoMults[slotIdx];
+          let win = b.bet * mult;
+          updateBalance(win);
+          recordGameStat('plinko', b.bet, win);
+          showMsg(`Kugel gelandet bei ${mult}x! Gewinn: +${win.toFixed(2)}€`, mult >= 1 ? 'win' : 'lose');
+          plinkoBalls.splice(i, 1);
+          continue;
+        }
+
+        // Kugel zeichnen
+        ctx.fillStyle = '#ef4444';
+        ctx.shadowColor = '#ef4444'; ctx.shadowBlur = 8;
+        ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+
+      plinkoLoopId = requestAnimationFrame(runPlinkoLoop);
+    }
+
+    function playPlinko() {
+      const bet = checkBet(); if (!bet) return; updateBalance(-bet);
+      const startX = 190 + (Math.random() - 0.5) * 12;
+      plinkoBalls.push({ x: startX, y: 15, vx: (Math.random() - 0.5) * 0.8, vy: 0, r: 6, bet: bet });
+      showMsg("Kugel geworfen...", "");
+    }
+
+    /* 3. ROULETTE HD */
     const rouletteNumbers = [
       { num: 0, color: 'green' }, { num: 32, color: 'red' }, { num: 15, color: 'black' },
       { num: 19, color: 'red' }, { num: 4, color: 'black' }, { num: 21, color: 'red' },
@@ -627,6 +743,13 @@
       { num: 34, color: 'red' }, { num: 6, color: 'black' }, { num: 27, color: 'red' }
     ];
     let currentRouletteAngle = 0;
+
+    function initRouletteHD() {
+      const cvs = document.getElementById('rouletteCanvas'); if (!cvs) return;
+      setupCanvasHD(cvs, 260, 260);
+      drawRouletteWheel(currentRouletteAngle);
+    }
+
     function drawRouletteWheel(ang) {
       const cvs = document.getElementById('rouletteCanvas'); if (!cvs) return;
       const ctx = cvs.getContext('2d'); ctx.clearRect(0,0,260,260);
@@ -641,13 +764,14 @@
       }
       ctx.fillStyle = '#0a0d14'; ctx.beginPath(); ctx.arc(130,130,45,0,Math.PI*2); ctx.fill();
     }
+
     function playRoulette(choice) {
       const bet = checkBet(); if (!bet) return; updateBalance(-bet); showMsg("Roulette dreht...", "");
       const winnerIdx = Math.floor(Math.random() * rouletteNumbers.length);
       const winner = rouletteNumbers[winnerIdx];
       const sliceArc = (Math.PI * 2) / rouletteNumbers.length;
       const targetAngle = (3 * Math.PI / 2) - (winnerIdx * sliceArc + sliceArc / 2) + (Math.PI * 16);
-      let startAng = currentRouletteAngle % (Math.PI * 2), startTime = null, duration = 6000;
+      let startAng = currentRouletteAngle % (Math.PI * 2), startTime = null, duration = 5000;
 
       function animate(time) {
         if (!startTime) startTime = time;
@@ -658,26 +782,39 @@
         drawRouletteWheel(currentRouletteAngle);
         if (progress < 1) { requestAnimationFrame(animate); }
         else {
+          let win = 0;
           if (choice === winner.color) {
-            const mult = winner.color === 'green' ? 14 : 2; const win = bet * mult; updateBalance(win);
+            const mult = winner.color === 'green' ? 14 : 2; win = bet * mult; updateBalance(win);
             showMsg(`Kugel stoppt bei ${winner.num} (${winner.color.toUpperCase()})! +${win.toFixed(2)}€`, 'win');
           } else {
             showMsg(`Kugel stoppt bei ${winner.num} (${winner.color.toUpperCase()}). Verloren!`, 'lose');
           }
+          recordGameStat('roulette', bet, win);
         }
       }
       requestAnimationFrame(animate);
     }
 
+    /* 4. GLÜCKSRAD - FAIE ODDS: EXACT 33.3% CHANCE DASS MAN GEWINNT */
     const wheelSlices = [
-      { label: '0x', mult: 0, color: '#334155' }, { label: '0.2x', mult: 0.2, color: '#475569' },
-      { label: '0.5x', mult: 0.5, color: '#0284c7' }, { label: '0x', mult: 0, color: '#334155' },
-      { label: '1x', mult: 1, color: '#10b981' }, { label: '0x', mult: 0, color: '#334155' },
-      { label: '0.5x', mult: 0.5, color: '#0284c7' }, { label: '1.5x', mult: 1.5, color: '#f59e0b' },
-      { label: '0x', mult: 0, color: '#334155' }, { label: '2x', mult: 2, color: '#8b5cf6' },
-      { label: '0x', mult: 0, color: '#334155' }, { label: '5x', mult: 5, color: '#ef4444' }
+      { label: '2x', mult: 2, color: '#f59e0b', isWin: true },
+      { label: '0x', mult: 0, color: '#334155', isWin: false },
+      { label: '0x', mult: 0, color: '#1e293b', isWin: false },
+      { label: '1.5x', mult: 1.5, color: '#10b981', isWin: true },
+      { label: '0x', mult: 0, color: '#334155', isWin: false },
+      { label: '0x', mult: 0, color: '#1e293b', isWin: false },
+      { label: '3x', mult: 3, color: '#8b5cf6', isWin: true },
+      { label: '0x', mult: 0, color: '#334155', isWin: false },
+      { label: '0x', mult: 0, color: '#1e293b', isWin: false }
     ];
     let currentWheelAngle = 0;
+
+    function initWheelHD() {
+      const cvs = document.getElementById('wheelCanvas'); if (!cvs) return;
+      setupCanvasHD(cvs, 260, 260);
+      drawVIPWheel(currentWheelAngle);
+    }
+
     function drawVIPWheel(ang) {
       const cvs = document.getElementById('wheelCanvas'); if (!cvs) return;
       const ctx = cvs.getContext('2d'); ctx.clearRect(0,0,260,260);
@@ -687,20 +824,23 @@
         ctx.moveTo(130, 130); ctx.arc(130, 130, 115, ang + i * arc, ang + (i + 1) * arc); ctx.fill();
         ctx.lineWidth = 2; ctx.strokeStyle = '#0a0d14'; ctx.stroke();
         ctx.save(); ctx.translate(130, 130); ctx.rotate(ang + i * arc + arc / 2);
-        ctx.fillStyle = '#ffffff'; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#ffffff'; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillText(wheelSlices[i].label, 75, 0); ctx.restore();
       }
       ctx.fillStyle = '#0a0d14'; ctx.beginPath(); ctx.arc(130, 130, 35, 0, Math.PI * 2); ctx.fill();
       ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 3; ctx.stroke();
     }
+
     function playWheel() {
       const bet = checkBet(); if (!bet) return; updateBalance(-bet); showMsg("Glücksrad dreht...", "");
       document.getElementById('wheelSpinBtn').disabled = true;
+      
       const winnerIdx = Math.floor(Math.random() * wheelSlices.length);
       const winner = wheelSlices[winnerIdx];
       const sliceArc = (Math.PI * 2) / wheelSlices.length;
       const targetAngle = (3 * Math.PI / 2) - (winnerIdx * sliceArc + sliceArc / 2) + (Math.PI * 10);
       let startAng = currentWheelAngle % (Math.PI * 2), startTime = null, duration = 4000;
+
       function animate(time) {
         if (!startTime) startTime = time;
         let progress = (time - startTime) / duration;
@@ -712,158 +852,16 @@
         else {
           document.getElementById('wheelSpinBtn').disabled = false;
           const win = bet * winner.mult; updateBalance(win);
-          showMsg(`Ergebnis: ${winner.label}! Gewinn: +${win.toFixed(2)}€`, winner.mult >= 1 ? 'win' : 'lose');
+          recordGameStat('wheel', bet, win);
+          showMsg(`Ergebnis: ${winner.label}! Gewinn: +${win.toFixed(2)}€`, winner.mult > 0 ? 'win' : 'lose');
         }
       }
       requestAnimationFrame(animate);
     }
 
+    /* COINFLIP */
     let currentCoinRotation = 0;
     function playCoinflip(choice) {
       const bet = checkBet(); if (!bet) return; updateBalance(-bet);
       const coin3D = document.getElementById('coin3D');
-      const isHeads = Math.random() < 0.5;
-      const result = isHeads ? 'Kopf' : 'Zahl';
       
-      currentCoinRotation += 1440 + (isHeads ? 0 : 180);
-      coin3D.style.transform = `rotateY(${currentCoinRotation}deg)`;
-
-      setTimeout(() => {
-        if (choice === result) {
-          const win = bet * 2; updateBalance(win); showMsg(`Richtig (${result})! +${win.toFixed(2)}€`, 'win');
-        } else { showMsg(`Falsch! Es war ${result}.`, 'lose'); }
-      }, 1200);
-    }
-
-    const diceRotations = { 1: {x:0, y:0}, 2: {x:0, y:-90}, 3: {x:0, y:-180}, 4: {x:0, y:90}, 5: {x:-90, y:0}, 6: {x:90, y:0} };
-    function playDice() {
-      const bet = checkBet(); if (!bet) return; updateBalance(-bet);
-      const cube = document.getElementById('cube');
-      const roll = Math.floor(Math.random() * 6) + 1;
-      const rot = diceRotations[roll];
-      cube.style.transform = `rotateX(${rot.x + 1440}deg) rotateY(${rot.y + 1440}deg)`;
-      setTimeout(() => {
-        if (roll > 3) {
-          const win = bet * 1.8; updateBalance(win); showMsg(`Gewürfelt: ${roll}! +${win.toFixed(2)}€`, 'win');
-        } else { showMsg(`Gewürfelt: ${roll}. Verloren!`, 'lose'); }
-      }, 1500);
-    }
-
-    let minesPositions = [], minesActive = false, minesBet = 0, minesRevealedCount = 0, minesBombCount = 1;
-    function renderEmptyMinesGrid() {
-      const grid = document.getElementById('minesGrid'); grid.innerHTML = '';
-      for (let i = 0; i < 9; i++) grid.innerHTML += `<button class="grid-btn" disabled>❓</button>`;
-    }
-    function startMines() {
-      const bet = checkBet(); if (!bet) return; updateBalance(-bet);
-      minesBet = bet;
-      minesBombCount = parseInt(document.getElementById('minesCountSelect').value) || 1;
-      minesActive = true; minesRevealedCount = 0;
-      minesPositions = [];
-      while (minesPositions.length < minesBombCount) {
-        let r = Math.floor(Math.random() * 9);
-        if (!minesPositions.includes(r)) minesPositions.push(r);
-      }
-      const grid = document.getElementById('minesGrid'); grid.innerHTML = '';
-      for (let i = 0; i < 9; i++) grid.innerHTML += `<button class="grid-btn" id="mBtn${i}" onclick="clickMine(${i})">❓</button>`;
-      document.getElementById('startMinesBtn').style.display = 'none';
-      document.getElementById('cashoutMinesBtn').style.display = 'inline-block';
-      showMsg(`${minesBombCount} Bomben aktiv. Aufdecke Blöcke!`, "");
-    }
-    function clickMine(idx) {
-      if (!minesActive) return; const btn = document.getElementById(`mBtn${idx}`);
-      if (minesPositions.includes(idx)) {
-        btn.innerText = '💣'; btn.style.background = '#ef4444'; minesActive = false;
-        showMsg("BOOM! Mine getroffen. Einsatz verloren!", "lose"); resetMinesControls();
-      } else {
-        btn.innerText = '💎'; btn.style.background = '#10b981'; btn.disabled = true; minesRevealedCount++;
-        const stepMult = 1 + (minesBombCount * 0.15);
-        const currentMultiplier = Math.pow(stepMult, minesRevealedCount);
-        const winValue = minesBet * currentMultiplier;
-        showMsg(`${minesRevealedCount} Block aufgedeckt! Auszahlung: ${winValue.toFixed(2)}€ (${currentMultiplier.toFixed(2)}x)`, 'win');
-        if (minesRevealedCount === (9 - minesBombCount)) cashoutMines();
-      }
-    }
-    function cashoutMines() {
-      if (!minesActive) return;
-      const stepMult = 1 + (minesBombCount * 0.15);
-      const currentMultiplier = Math.pow(stepMult, minesRevealedCount);
-      const win = minesBet * currentMultiplier;
-      updateBalance(win);
-      showMsg(`CASH OUT! Gewinn: +${win.toFixed(2)}€ (${currentMultiplier.toFixed(2)}x)`, 'win');
-      minesActive = false; resetMinesControls();
-    }
-    function resetMinesControls() {
-      document.getElementById('startMinesBtn').style.display = 'inline-block';
-      document.getElementById('cashoutMinesBtn').style.display = 'none';
-    }
-
-    let crashTimer = null, crashCurrentMult = 1.00, crashBetAmount = 0, crashIsRunning = false;
-    function startCrash() {
-      const bet = checkBet(); if (!bet) return; updateBalance(-bet);
-      crashBetAmount = bet; crashCurrentMult = 1.00; crashIsRunning = true;
-      document.getElementById('startCrashBtn').style.display = 'none';
-      document.getElementById('cashoutCrashBtn').style.display = 'inline-block';
-      showMsg("Rakete steigt...", "");
-
-      let rand = Math.random();
-      let crashPoint = rand < 0.75 ? (1.01 + Math.random() * 0.3) : (1.3 + Math.random() * 2.5);
-      crashPoint = parseFloat(crashPoint.toFixed(2));
-
-      crashTimer = setInterval(() => {
-        crashCurrentMult += 0.03;
-        document.getElementById('crashVal').innerText = `${crashCurrentMult.toFixed(2)}x 🚀`;
-
-        if (crashCurrentMult >= crashPoint) {
-          clearInterval(crashTimer); crashIsRunning = false;
-          showMsg(`💥 RAKETE GECRASHT bei ${crashPoint}x! Einsatz verloren.`, 'lose');
-          resetCrashUI();
-        }
-      }, 60);
-    }
-    function cashoutCrash() {
-      if (!crashIsRunning) return;
-      clearInterval(crashTimer); crashIsRunning = false;
-      const win = crashBetAmount * crashCurrentMult;
-      updateBalance(win);
-      showMsg(`CASH OUT ERFOLGREICH bei ${crashCurrentMult.toFixed(2)}x! +${win.toFixed(2)}€`, 'win');
-      resetCrashUI();
-    }
-    function resetCrashUI() {
-      document.getElementById('startCrashBtn').style.display = 'inline-block';
-      document.getElementById('cashoutCrashBtn').style.display = 'none';
-    }
-
-    let hlVal = 7;
-    function playHL(choice) {
-      const bet = checkBet(); if (!bet) return; updateBalance(-bet);
-      const next = Math.floor(Math.random() * 12) + 1;
-      document.getElementById('hlVal').innerText = next;
-      const win = (choice === 'higher' && next >= hlVal) || (choice === 'lower' && next <= hlVal);
-      if (win) {
-        const prize = bet * 1.8; updateBalance(prize); showMsg(`Karte war ${next}! +${prize.toFixed(2)}€`, 'win');
-      } else { showMsg(`Karte war ${next}. Verloren!`, 'lose'); }
-      hlVal = next;
-    }
-
-    function playKeno(choice) {
-      const bet = checkBet(); if (!bet) return; updateBalance(-bet);
-      const drawn = Math.floor(Math.random() * 5) + 1;
-      if (choice === drawn) {
-        const win = bet * 4; updateBalance(win); showMsg(`Treffer (${drawn})! +${win.toFixed(2)}€`, 'win');
-      } else { showMsg(`Zahl war ${drawn}. Verloren!`, 'lose'); }
-    }
-
-    if (currentAccountName && allAccounts[currentAccountName]) {
-      document.getElementById('authOverlay').style.display = 'none';
-      document.getElementById('currentUsernameDisplay').innerText = currentAccountName;
-      if (allAccounts[currentAccountName].isAdmin) {
-        document.getElementById('adminLinkBtn').style.display = 'inline-block';
-      }
-      initNav();
-      renderGame();
-      updateBalance(0);
-    }
-  </script>
-</body>
-</html>
