@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vegas Royale Casino</title>
+  <title>Vegas Royale VIP Casino</title>
   <style>
     :root {
       --bg-dark: #0a0d14;
@@ -32,17 +32,9 @@
     }
 
     header {
-      width: 100%;
-      max-width: 900px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: var(--card-bg);
-      border: 1px solid rgba(245, 158, 11, 0.2);
-      padding: 15px 25px;
-      border-radius: 16px;
-      margin-bottom: 20px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      width: 100%; max-width: 900px; display: flex; justify-content: space-between; align-items: center;
+      background: var(--card-bg); border: 1px solid rgba(245, 158, 11, 0.2);
+      padding: 15px 25px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
     }
 
     .brand { font-size: 1.4rem; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
@@ -56,8 +48,7 @@
     .refill-btn {
       background: linear-gradient(135deg, #ef4444, #dc2626);
       color: white; border: none; padding: 8px 16px; border-radius: 20px;
-      font-weight: bold; cursor: pointer; display: none;
-      box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+      font-weight: bold; cursor: pointer; display: none; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
     }
 
     .nav-grid {
@@ -78,7 +69,7 @@
     .game-container {
       width: 100%; max-width: 900px; background: var(--card-bg);
       border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px;
-      padding: 25px; min-height: 440px; display: flex; flex-direction: column;
+      padding: 25px; min-height: 460px; display: flex; flex-direction: column;
       align-items: center; justify-content: center; box-shadow: 0 15px 35px rgba(0,0,0,0.6);
       text-align: center; position: relative;
     }
@@ -101,7 +92,7 @@
     .status-msg.win { color: var(--success); }
     .status-msg.lose { color: var(--danger); }
 
-    /* SLOTS ANIMATION */
+    /* SLOTS */
     .slot-machine-wrapper {
       display: flex; gap: 10px; background: #090d16; padding: 15px; border-radius: 16px;
       border: 3px solid var(--accent); box-shadow: inset 0 0 20px #000; margin: 15px 0;
@@ -116,12 +107,32 @@
     }
     .slot-symbol { height: 80px; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; }
 
-    /* COINFLIP */
-    .coin {
-      width: 90px; height: 90px; border-radius: 50%; background: #eab308;
-      display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
-      font-weight: bold; color: #78350f; border: 4px solid #fef08a; margin: 15px auto;
-      transition: transform 1s ease-out;
+    /* 3D COINFLIP */
+    .coin-wrapper { perspective: 1000px; margin: 15px auto; width: 100px; height: 100px; }
+    .coin-3d {
+      width: 100%; height: 100%; position: relative; transform-style: preserve-3d;
+      transition: transform 1.2s cubic-bezier(0.15, 0.85, 0.35, 1.2);
+    }
+    .coin-face {
+      width: 100%; height: 100%; border-radius: 50%; position: absolute; backface-visibility: hidden;
+      display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 900;
+      border: 4px solid #fef08a; box-shadow: 0 0 15px rgba(245, 158, 11, 0.5);
+    }
+    .coin-heads { background: linear-gradient(135deg, #f59e0b, #b45309); color: #fff; }
+    .coin-tails { background: linear-gradient(135deg, #64748b, #1e293b); color: #fff; transform: rotateY(180deg); }
+
+    /* 3D WÜRFEL */
+    .dice-container { margin: 15px auto; width: 70px; height: 70px; perspective: 600px; }
+    .dice-3d {
+      width: 100%; height: 100%; background: #ffffff; color: #0f172a; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center; font-size: 2.8rem; font-weight: bold;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4); transition: transform 0.8s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+    }
+    .dice-rolling { animation: roll3D 0.8s ease-in-out; }
+    @keyframes roll3D {
+      0% { transform: rotateX(0deg) rotateY(0deg) scale(0.8); }
+      50% { transform: rotateX(360deg) rotateY(180deg) scale(1.1); }
+      100% { transform: rotateX(720deg) rotateY(360deg) scale(1); }
     }
 
     /* MINES */
@@ -130,7 +141,14 @@
       width: 70px; height: 70px; background: #1e293b; border: 1px solid rgba(255,255,255,0.1);
       border-radius: 10px; cursor: pointer; font-size: 1.8rem; display: flex; align-items: center; justify-content: center;
     }
-    .grid-btn:disabled { cursor: default; }
+
+    /* WHEEL CONTAINER */
+    .wheel-wrapper { position: relative; width: 260px; height: 260px; margin: 10px auto; }
+    .wheel-pointer {
+      position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 0; height: 0;
+      border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 22px solid #f59e0b;
+      z-index: 10; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.6));
+    }
 
     canvas { max-width: 100%; }
   </style>
@@ -151,16 +169,16 @@
       { id: 'slots', name: 'Slots', icon: '🎰' },
       { id: 'plinko', name: 'Plinko', icon: '⚪' },
       { id: 'roulette', name: 'Roulette', icon: '🎡' },
-      { id: 'baccarat', name: 'Baccarat', icon: '🎴' },
-      { id: 'coinflip', name: 'Coinflip', icon: '🪙' },
-      { id: 'mines', name: 'Mines', icon: '💣' },
-      { id: 'dice', name: 'Würfel', icon: '🎲' },
       { id: 'wheel', name: 'Glücksrad', icon: '🎯' },
+      { id: 'coinflip', name: 'Coinflip', icon: '🪙' },
+      { id: 'dice', name: 'Würfel', icon: '🎲' },
+      { id: 'mines', name: 'Mines', icon: '💣' },
+      { id: 'crash', name: 'Crash', icon: '🚀' },
       { id: 'higherlower', name: 'Höher/Tiefer', icon: '📈' },
       { id: 'keno', name: 'Keno', icon: '🔢' }
     ];
 
-    let balance = parseFloat(localStorage.getItem('casino_balance_v5')) || 100;
+    let balance = parseFloat(localStorage.getItem('casino_balance_v6')) || 100;
     let currentGame = 'slots';
 
     function initNav() {
@@ -175,7 +193,7 @@
     function updateBalance(amount) {
       balance += amount;
       balance = Math.round(balance * 100) / 100;
-      localStorage.setItem('casino_balance_v5', balance);
+      localStorage.setItem('casino_balance_v6', balance);
       document.getElementById('balance').innerText = balance.toFixed(2);
       document.getElementById('refillBtn').style.display = balance <= 0 ? 'block' : 'none';
     }
@@ -250,7 +268,10 @@
         case 'roulette':
           container.innerHTML = `
             <h2>Roulette</h2>
-            <canvas id="rouletteCanvas" width="250" height="250"></canvas>
+            <div class="wheel-wrapper">
+              <div class="wheel-pointer"></div>
+              <canvas id="rouletteCanvas" width="260" height="260"></canvas>
+            </div>
             ${getBetUI()}
             <div class="controls">
               <button class="action-btn" style="background:#ef4444;color:#fff;" onclick="playRoulette('red')">Rot (x2)</button>
@@ -259,13 +280,32 @@
             </div>
             <div class="status-msg" id="statusMsg"></div>
           `;
-          drawRouletteWheel(0, null);
+          drawRouletteWheel(currentRouletteAngle);
+          break;
+
+        case 'wheel':
+          container.innerHTML = `
+            <h2>VIP Glücksrad</h2>
+            <div class="wheel-wrapper">
+              <div class="wheel-pointer"></div>
+              <canvas id="wheelCanvas" width="260" height="260"></canvas>
+            </div>
+            ${getBetUI()}
+            <button class="action-btn" id="wheelSpinBtn" onclick="playWheel()">Rad drehen</button>
+            <div class="status-msg" id="statusMsg"></div>
+          `;
+          drawVIPWheel(currentWheelAngle);
           break;
 
         case 'coinflip':
           container.innerHTML = `
-            <h2>Coinflip</h2>
-            <div class="coin" id="coinBox">KOPF</div>
+            <h2>3D Coinflip</h2>
+            <div class="coin-wrapper">
+              <div class="coin-3d" id="coin3D">
+                <div class="coin-face coin-heads">KOPF</div>
+                <div class="coin-face coin-tails">ZAHL</div>
+              </div>
+            </div>
             ${getBetUI()}
             <div class="controls">
               <button class="action-btn" onclick="playCoinflip('Kopf')">Kopf</button>
@@ -275,9 +315,21 @@
           `;
           break;
 
+        case 'dice':
+          container.innerHTML = `
+            <h2>3D Würfel (Gewinn bei > 3)</h2>
+            <div class="dice-container">
+              <div class="dice-3d" id="diceBox">🎲</div>
+            </div>
+            ${getBetUI()}
+            <button class="action-btn" onclick="playDice()">Würfeln</button>
+            <div class="status-msg" id="statusMsg"></div>
+          `;
+          break;
+
         case 'mines':
           container.innerHTML = `
-            <h2>Mines (1 Mine im 3x3 Feld)</h2>
+            <h2>Mines (1 Mine)</h2>
             <div class="grid-3x3" id="minesGrid"></div>
             ${getBetUI()}
             <div class="controls">
@@ -289,38 +341,14 @@
           renderEmptyMinesGrid();
           break;
 
-        case 'baccarat':
+        case 'crash':
           container.innerHTML = `
-            <h2>Baccarat</h2>
-            <div style="font-size:2rem; margin:15px 0;">🎴 vs 🎴</div>
+            <h2>Crash Rocket</h2>
+            <div style="font-size: 3rem; margin: 15px 0;" id="crashVal">1.00x 🚀</div>
             ${getBetUI()}
-            <div class="controls">
-              <button class="action-btn" onclick="playBaccarat('player')">Spieler (x2)</button>
-              <button class="action-btn" onclick="playBaccarat('banker')">Bankier (x1.95)</button>
-            </div>
+            <button class="action-btn" id="crashBtn" onclick="playCrash()">Rakete Starten</button>
             <div class="status-msg" id="statusMsg"></div>
           `;
-          break;
-
-        case 'dice':
-          container.innerHTML = `
-            <h2>Würfel (Gewinn bei > 3)</h2>
-            <div style="font-size: 3.5rem; margin: 10px;" id="diceBox">🎲</div>
-            ${getBetUI()}
-            <button class="action-btn" onclick="playDice()">Würfeln</button>
-            <div class="status-msg" id="statusMsg"></div>
-          `;
-          break;
-
-        case 'wheel':
-          container.innerHTML = `
-            <h2>Glücksrad</h2>
-            <canvas id="wheelCanvas" width="240" height="240"></canvas>
-            ${getBetUI()}
-            <button class="action-btn" onclick="playWheel()">Rad drehen</button>
-            <div class="status-msg" id="statusMsg"></div>
-          `;
-          drawWheel(0);
           break;
 
         case 'higherlower':
@@ -338,7 +366,7 @@
 
         case 'keno':
           container.innerHTML = `
-            <h2>Keno (Zahl 1-5 tippen)</h2>
+            <h2>Keno (1-5 tippen)</h2>
             ${getBetUI()}
             <div class="controls" style="margin-top:15px;">
               ${[1,2,3,4,5].map(n => `<button class="action-btn" onclick="playKeno(${n})">${n}</button>`).join('')}
@@ -349,394 +377,301 @@
       }
     }
 
-    /* 1. SLOTS LOGIK */
+    /* 1. SLOTS */
     let slotReelsCount = 3;
     const slotSymbols = ['🍒', '🍋', '🍊', '💎', '7️⃣', '🔔'];
-
-    function setSlotReels(num) {
-      slotReelsCount = num;
-      renderSlotReels();
-    }
-
+    function setSlotReels(num) { slotReelsCount = num; renderSlotReels(); }
     function renderSlotReels() {
       const wrapper = document.getElementById('slotMachineWrapper');
       if (!wrapper) return;
       wrapper.innerHTML = '';
       for (let i = 0; i < slotReelsCount; i++) {
-        wrapper.innerHTML += `
-          <div class="slot-reel-container">
-            <div class="slot-reel-strip" id="strip${i}">
-              <div class="slot-symbol">🍒</div>
-            </div>
-          </div>
-        `;
+        wrapper.innerHTML += `<div class="slot-reel-container"><div class="slot-reel-strip" id="strip${i}"><div class="slot-symbol">🍒</div></div></div>`;
       }
     }
-
     function playSlots() {
       const bet = checkBet(); if (!bet) return;
-      updateBalance(-bet);
-      showMsg("Walzen laufen...", "");
+      updateBalance(-bet); showMsg("Walzen laufen...", "");
       document.getElementById('slotSpinBtn').disabled = true;
-
       const finalResults = [];
       for (let i = 0; i < slotReelsCount; i++) {
         const strip = document.getElementById(`strip${i}`);
         let stripContent = '';
-        for (let s = 0; s < 15; s++) {
-          stripContent += `<div class="slot-symbol">${slotSymbols[Math.floor(Math.random() * slotSymbols.length)]}</div>`;
-        }
+        for (let s = 0; s < 15; s++) stripContent += `<div class="slot-symbol">${slotSymbols[Math.floor(Math.random() * slotSymbols.length)]}</div>`;
         const winSym = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
         finalResults.push(winSym);
         stripContent += `<div class="slot-symbol">${winSym}</div>`;
-        
-        strip.innerHTML = stripContent;
-        strip.style.transition = 'none';
-        strip.style.transform = 'translateY(0px)';
-
+        strip.innerHTML = stripContent; strip.style.transition = 'none'; strip.style.transform = 'translateY(0px)';
         setTimeout(() => {
           strip.style.transition = `transform ${1.2 + i * 0.3}s cubic-bezier(0.1, 0.9, 0.2, 1)`;
           strip.style.transform = `translateY(-${15 * 80}px)`;
         }, 50);
       }
-
       setTimeout(() => {
         document.getElementById('slotSpinBtn').disabled = false;
         const matches = finalResults.filter(s => s === finalResults[0]).length;
         if (matches === slotReelsCount) {
-          const win = bet * (slotReelsCount * 3);
-          updateBalance(win);
-          showMsg(`🎉 VOLLTREFFER! +${win.toFixed(2)}€`, 'win');
+          const win = bet * (slotReelsCount * 3); updateBalance(win); showMsg(`🎉 VOLLTREFFER! +${win.toFixed(2)}€`, 'win');
         } else if (matches >= 2) {
-          const win = bet * 1.5;
-          updateBalance(win);
-          showMsg(`✨ Teiltreffer! +${win.toFixed(2)}€`, 'win');
-        } else {
-          showMsg("Leider kein Gewinn.", "lose");
-        }
+          const win = bet * 1.5; updateBalance(win); showMsg(`✨ Teiltreffer! +${win.toFixed(2)}€`, 'win');
+        } else { showMsg("Leider kein Gewinn.", "lose"); }
       }, 1200 + slotReelsCount * 300);
     }
 
-    /* 2. PLINKO LOGIK (ANGEPASSTE MULTIPLIKATOREN & WAHRSCHEINLICHKEITEN) */
+    /* 2. PLINKO */
     const plinkoMults = [4, 2, 1, 0.5, 0.2, 0.5, 1, 2, 4];
-    // Je höher der Gewinn, desto kleiner die Wahrscheinlichkeits-Gewichtung!
-    // 0.2x in der Mitte ist am häufigsten (Gewichtung 35), 4x an den Rändern am seltensten (Gewichtung 1)
     const plinkoWeights = [1, 4, 12, 22, 35, 22, 12, 4, 1];
-
     function drawPlinkoBoard() {
-      const cvs = document.getElementById('plinkoCanvas');
-      if (!cvs) return;
-      const ctx = cvs.getContext('2d');
-      ctx.clearRect(0,0,380,280);
-
-      // Pins (9 Spalten unten)
+      const cvs = document.getElementById('plinkoCanvas'); if (!cvs) return;
+      const ctx = cvs.getContext('2d'); ctx.clearRect(0,0,380,280);
       ctx.fillStyle = '#94a3b8';
       for (let r = 2; r <= 8; r++) {
         for (let c = 0; c <= r; c++) {
-          ctx.beginPath();
-          ctx.arc(190 - (r * 18) + (c * 36), r * 26, 3, 0, Math.PI * 2);
-          ctx.fill();
+          ctx.beginPath(); ctx.arc(190 - (r * 18) + (c * 36), r * 26, 3, 0, Math.PI * 2); ctx.fill();
         }
       }
-
-      // Multiplikatoren: 4x, 2x, 1x, 0.5x, 0.2x, 0.5x, 1x, 2x, 4x
       const labels = ['4x', '2x', '1x', '0.5x', '0.2x', '0.5x', '1x', '2x', '4x'];
-      ctx.font = 'bold 10px sans-serif';
-      ctx.textAlign = 'center';
+      ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
       for (let i = 0; i < labels.length; i++) {
-        if (labels[i] === '4x') ctx.fillStyle = '#ef4444';
-        else if (labels[i] === '2x') ctx.fillStyle = '#f97316';
-        else if (labels[i] === '1x') ctx.fillStyle = '#f59e0b';
-        else if (labels[i] === '0.5x') ctx.fillStyle = '#10b981';
-        else ctx.fillStyle = '#334155'; // 0.2x in der Mitte
-
-        ctx.fillRect(12 + i * 40, 230, 36, 22);
-        ctx.fillStyle = '#fff';
-        ctx.fillText(labels[i], 30 + i * 40, 245);
+        ctx.fillStyle = labels[i] === '4x' ? '#ef4444' : (labels[i] === '2x' ? '#f97316' : (labels[i] === '1x' ? '#f59e0b' : (labels[i] === '0.5x' ? '#10b981' : '#334155')));
+        ctx.fillRect(12 + i * 40, 230, 36, 22); ctx.fillStyle = '#fff'; ctx.fillText(labels[i], 30 + i * 40, 245);
       }
     }
-
     function playPlinko() {
-      const bet = checkBet(); if (!bet) return;
-      updateBalance(-bet);
-
-      // Zufalls-Berechnung basierend auf den Wahrscheinlichkeiten
-      let totalW = plinkoWeights.reduce((a,b)=>a+b, 0);
-      let rand = Math.random() * totalW;
-      let targetIdx = 0;
-
+      const bet = checkBet(); if (!bet) return; updateBalance(-bet);
+      let totalW = plinkoWeights.reduce((a,b)=>a+b, 0), rand = Math.random() * totalW, targetIdx = 0;
       for (let i = 0; i < plinkoWeights.length; i++) {
-        if (rand < plinkoWeights[i]) { targetIdx = i; break; }
-        rand -= plinkoWeights[i];
+        if (rand < plinkoWeights[i]) { targetIdx = i; break; } rand -= plinkoWeights[i];
       }
-
       let y = 30, x = 190, targetX = 30 + targetIdx * 40;
       const t = setInterval(() => {
-        y += 8;
-        x += (targetX - x) * 0.1;
+        y += 8; x += (targetX - x) * 0.1;
         drawPlinkoBoard();
-        const cvs = document.getElementById('plinkoCanvas');
-        const ctx = cvs.getContext('2d');
+        const cvs = document.getElementById('plinkoCanvas'); const ctx = cvs.getContext('2d');
         ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI*2); ctx.fill();
-
         if (y >= 220) {
-          clearInterval(t);
-          const mult = plinkoMults[targetIdx];
-          const win = bet * mult;
-          updateBalance(win);
+          clearInterval(t); const mult = plinkoMults[targetIdx]; const win = bet * mult; updateBalance(win);
           showMsg(`Plinko ${mult}x! Gewinn: +${win.toFixed(2)}€`, mult >= 1 ? 'win' : 'lose');
         }
       }, 25);
     }
 
-    /* 3. ROULETTE LOGIK */
+    /* 3. ROULETTE */
     const rouletteNumbers = [
       { num: 0, color: 'green' }, { num: 32, color: 'red' }, { num: 15, color: 'black' },
       { num: 19, color: 'red' }, { num: 4, color: 'black' }, { num: 21, color: 'red' },
       { num: 2, color: 'black' }, { num: 25, color: 'red' }, { num: 17, color: 'black' },
       { num: 34, color: 'red' }, { num: 6, color: 'black' }, { num: 27, color: 'red' }
     ];
-    let currentWheelAngle = 0;
-
-    function drawRouletteWheel(ang, ballIdx = null) {
-      const cvs = document.getElementById('rouletteCanvas');
-      if (!cvs) return;
-      const ctx = cvs.getContext('2d');
-      ctx.clearRect(0,0,250,250);
-
-      const slices = rouletteNumbers.length;
-      const arc = (Math.PI * 2) / slices;
-
+    let currentRouletteAngle = 0;
+    function drawRouletteWheel(ang) {
+      const cvs = document.getElementById('rouletteCanvas'); if (!cvs) return;
+      const ctx = cvs.getContext('2d'); ctx.clearRect(0,0,260,260);
+      const slices = rouletteNumbers.length, arc = (Math.PI * 2) / slices;
       for (let i = 0; i < slices; i++) {
         const item = rouletteNumbers[i];
-        ctx.beginPath();
-        ctx.fillStyle = item.color === 'green' ? '#10b981' : (item.color === 'red' ? '#ef4444' : '#1e293b');
-        ctx.moveTo(125,125);
-        ctx.arc(125,125,100, ang + i * arc, ang + (i + 1) * arc);
-        ctx.fill();
+        ctx.beginPath(); ctx.fillStyle = item.color === 'green' ? '#10b981' : (item.color === 'red' ? '#ef4444' : '#1e293b');
+        ctx.moveTo(130,130); ctx.arc(130,130,110, ang + i * arc, ang + (i + 1) * arc); ctx.fill();
+        ctx.save(); ctx.translate(130,130); ctx.rotate(ang + i * arc + arc/2);
+        ctx.fillStyle = '#fff'; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'right'; ctx.fillText(item.num, 95, 4);
+        ctx.restore();
       }
-
-      ctx.fillStyle = '#0a0d14'; ctx.beginPath(); ctx.arc(125,125,40,0,Math.PI*2); ctx.fill();
-
-      if (ballIdx !== null) {
-        const ballAng = ang + ballIdx * arc + arc / 2;
-        ctx.fillStyle = '#fff';
-        ctx.beginPath();
-        ctx.arc(125 + Math.cos(ballAng) * 75, 125 + Math.sin(ballAng) * 75, 7, 0, Math.PI * 2);
-        ctx.fill();
-      }
+      ctx.fillStyle = '#0a0d14'; ctx.beginPath(); ctx.arc(130,130,45,0,Math.PI*2); ctx.fill();
     }
-
     function playRoulette(choice) {
-      const bet = checkBet(); if (!bet) return;
-      updateBalance(-bet); showMsg("Kugel rollt...", "");
-
+      const bet = checkBet(); if (!bet) return; updateBalance(-bet); showMsg("Roulette dreht...", "");
       const winnerIdx = Math.floor(Math.random() * rouletteNumbers.length);
       const winner = rouletteNumbers[winnerIdx];
-
-      let speed = 0.3;
-      const t = setInterval(() => {
-        currentWheelAngle += speed;
-        speed *= 0.97;
-        drawRouletteWheel(currentWheelAngle, winnerIdx);
-
-        if (speed < 0.005) {
-          clearInterval(t);
-          drawRouletteWheel(currentWheelAngle, winnerIdx);
+      const sliceArc = (Math.PI * 2) / rouletteNumbers.length;
+      // Zeiger ist oben (-90 Grad)
+      const targetAngle = (3 * Math.PI / 2) - (winnerIdx * sliceArc + sliceArc / 2) + (Math.PI * 8);
+      let startAng = currentRouletteAngle % (Math.PI * 2), startTime = null, duration = 3000;
+      function animate(time) {
+        if (!startTime) startTime = time;
+        let progress = (time - startTime) / duration;
+        if (progress > 1) progress = 1;
+        let easeOut = 1 - Math.pow(1 - progress, 3);
+        currentRouletteAngle = startAng + (targetAngle - startAng) * easeOut;
+        drawRouletteWheel(currentRouletteAngle);
+        if (progress < 1) { requestAnimationFrame(animate); }
+        else {
           if (choice === winner.color) {
-            const mult = winner.color === 'green' ? 14 : 2;
-            const win = bet * mult;
-            updateBalance(win);
-            showMsg(`Kugel stoppt auf ${winner.num} (${winner.color.toUpperCase()})! +${win.toFixed(2)}€`, 'win');
+            const mult = winner.color === 'green' ? 14 : 2; const win = bet * mult; updateBalance(win);
+            showMsg(`Kugel stoppt bei ${winner.num} (${winner.color.toUpperCase()})! +${win.toFixed(2)}€`, 'win');
           } else {
-            showMsg(`Kugel stoppt auf ${winner.num} (${winner.color.toUpperCase()}). Verloren!`, 'lose');
+            showMsg(`Kugel stoppt bei ${winner.num} (${winner.color.toUpperCase()}). Verloren!`, 'lose');
           }
         }
-      }, 30);
+      }
+      requestAnimationFrame(animate);
     }
 
-    /* 4. COINFLIP LOGIK */
-    function playCoinflip(choice) {
-      const bet = checkBet(); if (!bet) return;
-      updateBalance(-bet);
+    /* 4. GLÜCKSRAD (VIP NEU) */
+    const wheelSlices = [
+      { label: '0x', mult: 0, color: '#334155' },
+      { label: '0.5x', mult: 0.5, color: '#0284c7' },
+      { label: '1x', mult: 1, color: '#10b981' },
+      { label: '1.5x', mult: 1.5, color: '#f59e0b' },
+      { label: '2x', mult: 2, color: '#8b5cf6' },
+      { label: '5x', mult: 5, color: '#ef4444' }
+    ];
+    let currentWheelAngle = 0;
 
-      const coinBox = document.getElementById('coinBox');
+    function drawVIPWheel(ang) {
+      const cvs = document.getElementById('wheelCanvas'); if (!cvs) return;
+      const ctx = cvs.getContext('2d'); ctx.clearRect(0,0,260,260);
+      const slices = wheelSlices.length, arc = (Math.PI * 2) / slices;
+
+      for (let i = 0; i < slices; i++) {
+        ctx.beginPath(); ctx.fillStyle = wheelSlices[i].color;
+        ctx.moveTo(130, 130); ctx.arc(130, 130, 115, ang + i * arc, ang + (i + 1) * arc); ctx.fill();
+        ctx.lineWidth = 2; ctx.strokeStyle = '#0a0d14'; ctx.stroke();
+        
+        // ZENTRIERTER TEXT
+        ctx.save(); ctx.translate(130, 130); ctx.rotate(ang + i * arc + arc / 2);
+        ctx.fillStyle = '#ffffff'; ctx.font = 'bold 16px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(wheelSlices[i].label, 70, 0); ctx.restore();
+      }
+      ctx.fillStyle = '#0a0d14'; ctx.beginPath(); ctx.arc(130, 130, 35, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 3; ctx.stroke();
+    }
+
+    function playWheel() {
+      const bet = checkBet(); if (!bet) return; updateBalance(-bet); showMsg("Glücksrad dreht...", "");
+      document.getElementById('wheelSpinBtn').disabled = true;
+
+      const winnerIdx = Math.floor(Math.random() * wheelSlices.length);
+      const winner = wheelSlices[winnerIdx];
+      const sliceArc = (Math.PI * 2) / wheelSlices.length;
+      const targetAngle = (3 * Math.PI / 2) - (winnerIdx * sliceArc + sliceArc / 2) + (Math.PI * 10);
+      let startAng = currentWheelAngle % (Math.PI * 2), startTime = null, duration = 3500;
+
+      function animate(time) {
+        if (!startTime) startTime = time;
+        let progress = (time - startTime) / duration;
+        if (progress > 1) progress = 1;
+        let easeOut = 1 - Math.pow(1 - progress, 4);
+        currentWheelAngle = startAng + (targetAngle - startAng) * easeOut;
+        drawVIPWheel(currentWheelAngle);
+
+        if (progress < 1) { requestAnimationFrame(animate); }
+        else {
+          document.getElementById('wheelSpinBtn').disabled = false;
+          const win = bet * winner.mult; updateBalance(win);
+          showMsg(`Das Rad stoppt bei ${winner.label}! +${win.toFixed(2)}€`, winner.mult >= 1 ? 'win' : 'lose');
+        }
+      }
+      requestAnimationFrame(animate);
+    }
+
+    /* 5. COINFLIP */
+    function playCoinflip(choice) {
+      const bet = checkBet(); if (!bet) return; updateBalance(-bet);
+      const coin3D = document.getElementById('coin3D');
       const isHeads = Math.random() < 0.5;
       const result = isHeads ? 'Kopf' : 'Zahl';
+      const targetDeg = isHeads ? 1440 : 1620;
 
-      coinBox.style.transform = 'rotateY(720deg)';
+      coin3D.style.transform = `rotateY(${targetDeg}deg)`;
       setTimeout(() => {
-        coinBox.style.transform = 'rotateY(0deg)';
-        coinBox.innerText = result.toUpperCase();
         if (choice === result) {
-          const win = bet * 2; updateBalance(win);
-          showMsg(`Richtig! Es ist ${result}. +${win.toFixed(2)}€`, 'win');
-        } else {
-          showMsg(`Falsch! Es war ${result}.`, 'lose');
-        }
-      }, 600);
+          const win = bet * 2; updateBalance(win); showMsg(`Richtig (${result})! +${win.toFixed(2)}€`, 'win');
+        } else { showMsg(`Falsch! Es war ${result}.`, 'lose'); }
+      }, 1200);
     }
 
-    /* 5. MINES LOGIK */
-    let minesMinePos = -1;
-    let minesActive = false;
-    let minesBet = 0;
-    let minesRevealedCount = 0;
+    /* 6. DICE (3D ANIMATION) */
+    function playDice() {
+      const bet = checkBet(); if (!bet) return; updateBalance(-bet);
+      const diceBox = document.getElementById('diceBox');
+      diceBox.classList.add('dice-rolling');
+      setTimeout(() => {
+        const roll = Math.floor(Math.random() * 6) + 1;
+        diceBox.classList.remove('dice-rolling');
+        diceBox.innerText = roll;
+        if (roll > 3) {
+          const win = bet * 1.8; updateBalance(win); showMsg(`Gewürfelt: ${roll}! +${win.toFixed(2)}€`, 'win');
+        } else { showMsg(`Gewürfelt: ${roll}. Verloren!`, 'lose'); }
+      }, 800);
+    }
 
+    /* 7. MINES */
+    let minesMinePos = -1, minesActive = false, minesBet = 0, minesRevealedCount = 0;
     function renderEmptyMinesGrid() {
-      const grid = document.getElementById('minesGrid');
-      grid.innerHTML = '';
-      for (let i = 0; i < 9; i++) {
-        grid.innerHTML += `<button class="grid-btn" disabled>❓</button>`;
-      }
+      const grid = document.getElementById('minesGrid'); grid.innerHTML = '';
+      for (let i = 0; i < 9; i++) grid.innerHTML += `<button class="grid-btn" disabled>❓</button>`;
     }
-
     function startMines() {
-      const bet = checkBet(); if (!bet) return;
-      updateBalance(-bet);
-      minesBet = bet;
-      minesMinePos = Math.floor(Math.random() * 9);
-      minesActive = true;
-      minesRevealedCount = 0;
-
-      const grid = document.getElementById('minesGrid');
-      grid.innerHTML = '';
-      for (let i = 0; i < 9; i++) {
-        grid.innerHTML += `<button class="grid-btn" id="mBtn${i}" onclick="clickMine(${i})">❓</button>`;
-      }
-
+      const bet = checkBet(); if (!bet) return; updateBalance(-bet);
+      minesBet = bet; minesMinePos = Math.floor(Math.random() * 9); minesActive = true; minesRevealedCount = 0;
+      const grid = document.getElementById('minesGrid'); grid.innerHTML = '';
+      for (let i = 0; i < 9; i++) grid.innerHTML += `<button class="grid-btn" id="mBtn${i}" onclick="clickMine(${i})">❓</button>`;
       document.getElementById('startMinesBtn').style.display = 'none';
       document.getElementById('cashoutMinesBtn').style.display = 'inline-block';
       showMsg("Feld gestartet! Aufdecke Diamanten.", "");
     }
-
     function clickMine(idx) {
-      if (!minesActive) return;
-      const btn = document.getElementById(`mBtn${idx}`);
-
+      if (!minesActive) return; const btn = document.getElementById(`mBtn${idx}`);
       if (idx === minesMinePos) {
-        btn.innerText = '💣'; btn.style.background = '#ef4444';
-        minesActive = false;
-        showMsg("BOOM! Eine Mine getroffen. Einsatz verloren!", "lose");
-        resetMinesControls();
+        btn.innerText = '💣'; btn.style.background = '#ef4444'; minesActive = false;
+        showMsg("BOOM! Mine getroffen.", "lose"); resetMinesControls();
       } else {
-        btn.innerText = '💎'; btn.style.background = '#10b981'; btn.disabled = true;
-        minesRevealedCount++;
-        const currentMultiplier = 1 + (minesRevealedCount * 0.35);
-        const winValue = minesBet * currentMultiplier;
-        showMsg(`${minesRevealedCount} Diamant(en)! Aktueller Gewinn: ${winValue.toFixed(2)}€`, 'win');
-
-        if (minesRevealedCount === 8) {
-          cashoutMines();
-        }
+        btn.innerText = '💎'; btn.style.background = '#10b981'; btn.disabled = true; minesRevealedCount++;
+        const currentMultiplier = 1 + (minesRevealedCount * 0.35); const winValue = minesBet * currentMultiplier;
+        showMsg(`${minesRevealedCount} Diamant(en)! Gewinn: ${winValue.toFixed(2)}€`, 'win');
+        if (minesRevealedCount === 8) cashoutMines();
       }
     }
-
     function cashoutMines() {
       if (!minesActive) return;
-      const currentMultiplier = 1 + (minesRevealedCount * 0.35);
-      const win = minesBet * currentMultiplier;
-      updateBalance(win);
-      showMsg(`CASH OUT! Gewinn: +${win.toFixed(2)}€`, 'win');
-      minesActive = false;
-      resetMinesControls();
+      const win = minesBet * (1 + (minesRevealedCount * 0.35)); updateBalance(win);
+      showMsg(`CASH OUT! +${win.toFixed(2)}€`, 'win'); minesActive = false; resetMinesControls();
     }
-
     function resetMinesControls() {
       document.getElementById('startMinesBtn').style.display = 'inline-block';
       document.getElementById('cashoutMinesBtn').style.display = 'none';
     }
 
-    /* 6. BACCARAT */
-    function playBaccarat(choice) {
-      const bet = checkBet(); if (!bet) return;
-      updateBalance(-bet);
-      const playerVal = Math.floor(Math.random() * 10);
-      const bankerVal = Math.floor(Math.random() * 10);
-
-      let winner = 'tie';
-      if (playerVal > bankerVal) winner = 'player';
-      else if (bankerVal > playerVal) winner = 'banker';
-
-      if (choice === winner) {
-        const mult = winner === 'player' ? 2 : 1.95;
-        const win = bet * mult; updateBalance(win);
-        showMsg(`Spieler: ${playerVal} | Bankier: ${bankerVal}. Gewinn: +${win.toFixed(2)}€`, 'win');
-      } else if (winner === 'tie') {
-        updateBalance(bet); showMsg(`Unentschieden (${playerVal}:${bankerVal})! Einsatz zurück.`, '');
-      } else {
-        showMsg(`Spieler: ${playerVal} | Bankier: ${bankerVal}. Verloren!`, 'lose');
-      }
+    /* 8. CRASH ROCKET */
+    function playCrash() {
+      const bet = checkBet(); if (!bet) return; updateBalance(-bet);
+      const btn = document.getElementById('crashBtn'); btn.disabled = true;
+      let mult = 1.00;
+      const crashPoint = (Math.random() * 3 + 1).toFixed(2);
+      const t = setInterval(() => {
+        mult += 0.05;
+        document.getElementById('crashVal').innerText = `${mult.toFixed(2)}x 🚀`;
+        if (mult >= crashPoint) {
+          clearInterval(t); btn.disabled = false;
+          showMsg(`CRASH bei ${crashPoint}x! Einsatz verloren.`, 'lose');
+        } else if (Math.random() < 0.08) {
+          clearInterval(t); btn.disabled = false;
+          const win = bet * mult; updateBalance(win);
+          showMsg(`CASHED OUT bei ${mult.toFixed(2)}x! +${win.toFixed(2)}€`, 'win');
+        }
+      }, 100);
     }
 
-    /* 7. DICE */
-    function playDice() {
-      const bet = checkBet(); if (!bet) return;
-      updateBalance(-bet);
-      const roll = Math.floor(Math.random() * 6) + 1;
-      document.getElementById('diceBox').innerText = `🎲 ${roll}`;
-      if (roll > 3) {
-        const win = bet * 1.8; updateBalance(win); showMsg(`Gewürfelt: ${roll}! Gewinn: +${win.toFixed(2)}€`, 'win');
-      } else {
-        showMsg(`Gewürfelt: ${roll}. Verloren!`, 'lose');
-      }
-    }
-
-    /* 8. WHEEL */
-    function drawWheel(ang) {
-      const cvs = document.getElementById('wheelCanvas');
-      if (!cvs) return;
-      const ctx = cvs.getContext('2d');
-      ctx.clearRect(0,0,240,240);
-      const mults = ['0x', '1.5x', '2x', '0.5x', '5x', '1x'];
-      const arc = (Math.PI*2)/mults.length;
-      for (let i=0; i<mults.length; i++) {
-        ctx.beginPath(); ctx.fillStyle = `hsl(${i*60},70%,50%)`;
-        ctx.moveTo(120,120); ctx.arc(120,120,100, ang + i*arc, ang + (i+1)*arc); ctx.fill();
-        ctx.fillStyle='#fff'; ctx.font='bold 13px sans-serif';
-        ctx.fillText(mults[i], 120 + Math.cos(ang + i*arc + arc/2)*60, 125 + Math.sin(ang + i*arc + arc/2)*60);
-      }
-    }
-    function playWheel() {
-      const bet = checkBet(); if (!bet) return;
-      updateBalance(-bet);
-      const mults = [0, 1.5, 2, 0.5, 5, 1];
-      const mult = mults[Math.floor(Math.random() * mults.length)];
-      let ang = 0;
-      const t = setInterval(() => { ang += 0.3; drawWheel(ang); }, 30);
-      setTimeout(() => {
-        clearInterval(t);
-        const win = bet * mult; updateBalance(win);
-        showMsg(`Rad stoppt bei ${mult}x! +${win.toFixed(2)}€`, mult >= 1 ? 'win' : 'lose');
-      }, 800);
-    }
-
-    /* 9. HIGHER/LOWER */
+    /* 9. HIGHER / LOWER */
     let hlVal = 7;
     function playHL(choice) {
-      const bet = checkBet(); if (!bet) return;
-      updateBalance(-bet);
+      const bet = checkBet(); if (!bet) return; updateBalance(-bet);
       const next = Math.floor(Math.random() * 12) + 1;
       document.getElementById('hlVal').innerText = next;
       const win = (choice === 'higher' && next >= hlVal) || (choice === 'lower' && next <= hlVal);
       if (win) {
         const prize = bet * 1.8; updateBalance(prize); showMsg(`Karte war ${next}! +${prize.toFixed(2)}€`, 'win');
-      } else {
-        showMsg(`Karte war ${next}. Verloren!`, 'lose');
-      }
+      } else { showMsg(`Karte war ${next}. Verloren!`, 'lose'); }
       hlVal = next;
     }
 
     /* 10. KENO */
     function playKeno(choice) {
-      const bet = checkBet(); if (!bet) return;
-      updateBalance(-bet);
+      const bet = checkBet(); if (!bet) return; updateBalance(-bet);
       const drawn = Math.floor(Math.random() * 5) + 1;
       if (choice === drawn) {
         const win = bet * 4; updateBalance(win); showMsg(`Treffer (${drawn})! +${win.toFixed(2)}€`, 'win');
-      } else {
-        showMsg(`Zahl war ${drawn}. Verloren!`, 'lose');
-      }
+      } else { showMsg(`Zahl war ${drawn}. Verloren!`, 'lose'); }
     }
 
     // Start
