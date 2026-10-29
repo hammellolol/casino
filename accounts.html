@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin & Account Management - Vegas VIP</title>
+  <style>
+    :root {
+      --bg-dark: #0a0d14;
+      --card-bg: rgba(22, 28, 45, 0.95);
+      --accent: #f59e0b;
+      --text: #f8fafc;
+      --danger: #ef4444;
+      --success: #10b981;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+    body { background-color: var(--bg-dark); color: var(--text); padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+    .container { width: 100%; max-width: 700px; background: var(--card-bg); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 16px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
+    h1 { color: var(--accent); margin-bottom: 5px; text-align: center; }
+    p { color: #94a3b8; text-align: center; margin-bottom: 20px; font-size: 0.9rem; }
+    .account-row { display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 12px 15px; margin: 10px 0; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); }
+    .btn { background: var(--accent); color: #000; font-weight: bold; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-success { background: var(--success); color: #fff; }
+    .back-link { display: inline-block; margin-top: 20px; color: var(--accent); text-decoration: none; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>👑 Account & Admin Kontrolle</h1>
+    <p>Hier hast du die volle Übersicht und Kontrolle über alle Spieler-Accounts und deren Guthaben.</p>
+    
+    <div id="accountsList"></div>
+
+    <a href="index.html" class="back-link">← Zurück zum Casino</a>
+  </div>
+
+  <script>
+    function loadAccounts() {
+      const allAccounts = JSON.parse(localStorage.getItem('casino_all_accounts')) || {};
+      const listDiv = document.getElementById('accountsList');
+      listDiv.innerHTML = '';
+
+      if (Object.keys(allAccounts).length === 0) {
+        listDiv.innerHTML = '<p>Keine Accounts gefunden.</p>';
+        return;
+      }
+
+      for (let acc in allAccounts) {
+        let data = allAccounts[acc];
+        listDiv.innerHTML += `
+          <div class="account-row">
+            <div>
+              <strong>${acc}</strong> ${data.isAdmin ? '👑 (Admin)' : ''}
+              <div style="font-size:0.8rem; color:#94a3b8;">Guthaben: <span style="color:var(--success); font-weight:bold;">${data.balance.toFixed(2)}€</span></div>
+            </div>
+            <div>
+              <button class="btn btn-success" onclick="modifyMoney('${acc}', 100)">+100€</button>
+              <button class="btn" onclick="modifyMoney('${acc}', 1000)">+1.000€</button>
+              <button class="btn btn-danger" onclick="resetAccount('${acc}')">Reset</button>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function modifyMoney(acc, amount) {
+      let allAccounts = JSON.parse(localStorage.getItem('casino_all_accounts')) || {};
+      if (allAccounts[acc]) {
+        allAccounts[acc].balance += amount;
+        localStorage.setItem('casino_all_accounts', JSON.stringify(allAccounts));
+        loadAccounts();
+      }
+    }
+
+    function resetAccount(acc) {
+      let allAccounts = JSON.parse(localStorage.getItem('casino_all_accounts')) || {};
+      if (allAccounts[acc]) {
+        allAccounts[acc].balance = 100.00;
+        localStorage.setItem('casino_all_accounts', JSON.stringify(allAccounts));
+        loadAccounts();
+      }
+    }
+
+    loadAccounts();
+  </script>
+</body>
+</html>
