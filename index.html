@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vegas Royale VIP Casino</title>
+  <title>Vegas Royale Casino</title>
   <style>
     :root {
       --bg-dark: #0a0d14;
@@ -45,195 +45,94 @@
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 1.4rem;
-      font-weight: 800;
-      color: var(--accent);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
+    .brand { font-size: 1.4rem; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
 
     .balance-box {
-      font-size: 1.2rem;
-      font-weight: 700;
-      background: rgba(15, 23, 42, 0.8);
-      padding: 8px 16px;
-      border-radius: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      font-size: 1.2rem; font-weight: 700; background: rgba(15, 23, 42, 0.8);
+      padding: 8px 16px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.1);
     }
-
     .balance-box span { color: var(--success); font-size: 1.3rem; }
 
     .refill-btn {
       background: linear-gradient(135deg, #ef4444, #dc2626);
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-weight: bold;
-      cursor: pointer;
-      display: none;
+      color: white; border: none; padding: 8px 16px; border-radius: 20px;
+      font-weight: bold; cursor: pointer; display: none;
       box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
-      animation: pulse 1.5s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
     }
 
     .nav-grid {
-      width: 100%;
-      max-width: 900px;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-      gap: 10px;
-      margin-bottom: 20px;
+      width: 100%; max-width: 900px; display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; margin-bottom: 20px;
     }
 
     .nav-btn {
-      background: var(--card-bg);
-      color: #94a3b8;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      padding: 10px 6px;
-      border-radius: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.8rem;
+      background: var(--card-bg); color: #94a3b8; border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 10px 6px; border-radius: 12px; font-weight: 600; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 0.8rem;
     }
-
-    .nav-icon { font-size: 1.5rem; }
-
     .nav-btn:hover, .nav-btn.active {
-      border-color: var(--accent);
-      color: var(--text);
-      background: rgba(245, 158, 11, 0.15);
+      border-color: var(--accent); color: var(--text); background: rgba(245, 158, 11, 0.15);
       box-shadow: 0 4px 12px var(--accent-glow);
     }
 
     .game-container {
-      width: 100%;
-      max-width: 900px;
-      background: var(--card-bg);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 20px;
-      padding: 25px;
-      min-height: 420px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.6);
-      text-align: center;
+      width: 100%; max-width: 900px; background: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px;
+      padding: 25px; min-height: 440px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+      text-align: center; position: relative;
     }
 
-    .controls {
-      margin-top: 20px;
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
+    .controls { margin-top: 15px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; }
 
     input[type="number"] {
-      width: 100px;
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #475569;
-      background: #0f172a;
-      color: white;
-      text-align: center;
-      font-size: 1rem;
-      font-weight: bold;
+      width: 90px; padding: 8px; border-radius: 8px; border: 1px solid #475569;
+      background: #0f172a; color: white; text-align: center; font-size: 1rem; font-weight: bold;
     }
 
     button.action-btn {
-      background: linear-gradient(135deg, var(--accent), #d97706);
-      color: #000;
-      font-weight: 800;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: transform 0.1s;
-      box-shadow: 0 4px 15px var(--accent-glow);
-      margin-top: 15px;
+      background: linear-gradient(135deg, var(--accent), #d97706); color: #000;
+      font-weight: 800; border: none; padding: 10px 20px; border-radius: 8px;
+      cursor: pointer; font-size: 0.95rem; box-shadow: 0 4px 15px var(--accent-glow);
     }
+    button.action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    button.action-btn:active { transform: scale(0.96); }
-
-    .status-msg {
-      margin-top: 15px;
-      font-size: 1.1rem;
-      font-weight: bold;
-      min-height: 28px;
-      text-align: center;
-      color: #e2e8f0;
-    }
-    .status-msg.win { color: var(--success); text-shadow: 0 0 10px rgba(16,185,129,0.5); }
+    .status-msg { margin-top: 15px; font-size: 1.1rem; font-weight: bold; min-height: 28px; }
+    .status-msg.win { color: var(--success); }
     .status-msg.lose { color: var(--danger); }
 
-    /* Slots Styling */
-    .slot-machine {
-      display: flex;
-      gap: 15px;
-      background: #090d16;
-      padding: 20px;
-      border-radius: 16px;
-      border: 3px solid var(--accent);
-      box-shadow: inset 0 0 20px #000;
-      margin: 15px 0;
+    /* SLOTS ANIMATION */
+    .slot-machine-wrapper {
+      display: flex; gap: 10px; background: #090d16; padding: 15px; border-radius: 16px;
+      border: 3px solid var(--accent); box-shadow: inset 0 0 20px #000; margin: 15px 0;
     }
-    .slot-reel {
-      width: 75px;
-      height: 75px;
-      background: #1e293b;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2.5rem;
-      border: 1px solid rgba(255,255,255,0.1);
+    .slot-reel-container {
+      width: 65px; height: 80px; background: #1e293b; border-radius: 8px;
+      overflow: hidden; position: relative; border: 1px solid rgba(255,255,255,0.1);
     }
-    .spinning { animation: shake 0.1s infinite; }
-    @keyframes shake { 0% { transform: translateY(-2px); } 100% { transform: translateY(2px); } }
+    .slot-reel-strip {
+      display: flex; flex-direction: column; position: absolute; top: 0; left: 0; width: 100%;
+      transition: transform 1.5s cubic-bezier(0.1, 0.9, 0.2, 1);
+    }
+    .slot-symbol { height: 80px; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; }
 
-    /* Coinflip 3D */
-    .coin-box {
-      width: 100px;
-      height: 100px;
-      background: #eab308;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.2rem;
-      font-weight: bold;
-      color: #78350f;
-      border: 4px solid #fef08a;
-      box-shadow: 0 8px 20px rgba(234, 179, 8, 0.4);
-      margin: 15px auto;
-      transition: transform 0.8s ease-out;
+    /* COINFLIP */
+    .coin {
+      width: 90px; height: 90px; border-radius: 50%; background: #eab308;
+      display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+      font-weight: bold; color: #78350f; border: 4px solid #fef08a; margin: 15px auto;
+      transition: transform 1s ease-out;
     }
 
-    /* Mines & Grids */
+    /* MINES */
     .grid-3x3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 15px 0; }
-    .grid-btn { width: 70px; height: 70px; background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; cursor: pointer; font-size: 1.8rem; display: flex; align-items: center; justify-content: center; }
-    
-    canvas { background: #090d16; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin: 10px 0; }
+    .grid-btn {
+      width: 70px; height: 70px; background: #1e293b; border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px; cursor: pointer; font-size: 1.8rem; display: flex; align-items: center; justify-content: center;
+    }
+    .grid-btn:disabled { cursor: default; }
+
+    canvas { max-width: 100%; }
   </style>
 </head>
 <body>
@@ -241,7 +140,7 @@
   <header>
     <div class="brand">💎 Vegas VIP</div>
     <div class="balance-box">Guthaben: <span id="balance">100.00</span> €</div>
-    <button id="refillBtn" class="refill-btn" onclick="refillBalance()">+20€ Gratis Guthaben</button>
+    <button id="refillBtn" class="refill-btn" onclick="refillBalance()">+20€ Pleite-Hilfe</button>
   </header>
 
   <div class="nav-grid" id="navGrid"></div>
@@ -252,7 +151,7 @@
       { id: 'slots', name: 'Slots', icon: '🎰' },
       { id: 'plinko', name: 'Plinko', icon: '⚪' },
       { id: 'roulette', name: 'Roulette', icon: '🎡' },
-      { id: 'blackjack', name: 'Blackjack', icon: '🃏' },
+      { id: 'baccarat', name: 'Baccarat', icon: '🎴' },
       { id: 'coinflip', name: 'Coinflip', icon: '🪙' },
       { id: 'mines', name: 'Mines', icon: '💣' },
       { id: 'dice', name: 'Würfel', icon: '🎲' },
@@ -261,15 +160,14 @@
       { id: 'keno', name: 'Keno', icon: '🔢' }
     ];
 
-    let balance = parseFloat(localStorage.getItem('casino_balance_v3')) || 100;
+    let balance = parseFloat(localStorage.getItem('casino_balance_v5')) || 100;
     let currentGame = 'slots';
 
     function initNav() {
       const nav = document.getElementById('navGrid');
       nav.innerHTML = GAMES.map(g => `
         <button class="nav-btn ${g.id === currentGame ? 'active' : ''}" onclick="switchGame('${g.id}')">
-          <span class="nav-icon">${g.icon}</span>
-          ${g.name}
+          <span style="font-size:1.4rem">${g.icon}</span>${g.name}
         </button>
       `).join('');
     }
@@ -277,7 +175,7 @@
     function updateBalance(amount) {
       balance += amount;
       balance = Math.round(balance * 100) / 100;
-      localStorage.setItem('casino_balance_v3', balance);
+      localStorage.setItem('casino_balance_v5', balance);
       document.getElementById('balance').innerText = balance.toFixed(2);
       document.getElementById('refillBtn').style.display = balance <= 0 ? 'block' : 'none';
     }
@@ -297,10 +195,7 @@
 
     function showMsg(text, type = '') {
       const el = document.getElementById('statusMsg');
-      if (el) {
-        el.className = `status-msg ${type}`;
-        el.innerText = text;
-      }
+      if (el) { el.className = `status-msg ${type}`; el.innerText = text; }
     }
 
     function checkBet() {
@@ -326,24 +221,27 @@
       switch(currentGame) {
         case 'slots':
           container.innerHTML = `
-            <h2>VIP Slots</h2>
-            <div class="slot-machine">
-              <div class="slot-reel" id="reel0">🍒</div>
-              <div class="slot-reel" id="reel1">🍋</div>
-              <div class="slot-reel" id="reel2">💎</div>
+            <h2>VIP Automaten Slots</h2>
+            <div style="margin: 10px 0;">
+              <label>Walzen Anz.: </label>
+              <button class="action-btn" style="padding:4px 12px;" onclick="setSlotReels(3)">3</button>
+              <button class="action-btn" style="padding:4px 12px;" onclick="setSlotReels(4)">4</button>
+              <button class="action-btn" style="padding:4px 12px;" onclick="setSlotReels(5)">5</button>
             </div>
+            <div class="slot-machine-wrapper" id="slotMachineWrapper"></div>
             ${getBetUI()}
-            <button class="action-btn" onclick="playSlots()">Drehen</button>
+            <button class="action-btn" id="slotSpinBtn" onclick="playSlots()">Drehen</button>
             <div class="status-msg" id="statusMsg"></div>
           `;
+          renderSlotReels();
           break;
 
         case 'plinko':
           container.innerHTML = `
             <h2>Plinko</h2>
-            <canvas id="plinkoCanvas" width="320" height="260"></canvas>
+            <canvas id="plinkoCanvas" width="380" height="280"></canvas>
             ${getBetUI()}
-            <button class="action-btn" onclick="playPlinko()">Kugel fallen lassen</button>
+            <button class="action-btn" onclick="playPlinko()">Kugel werfen</button>
             <div class="status-msg" id="statusMsg"></div>
           `;
           drawPlinkoBoard();
@@ -352,26 +250,26 @@
         case 'roulette':
           container.innerHTML = `
             <h2>Roulette</h2>
-            <canvas id="rouletteCanvas" width="240" height="240"></canvas>
+            <canvas id="rouletteCanvas" width="250" height="250"></canvas>
             ${getBetUI()}
             <div class="controls">
-              <button class="action-btn" style="background:#ef4444;color:#fff;margin:0;" onclick="playRoulette('red')">Rot (x2)</button>
-              <button class="action-btn" style="background:#10b981;color:#fff;margin:0;" onclick="playRoulette('green')">Grün (x14)</button>
-              <button class="action-btn" style="background:#334155;color:#fff;margin:0;" onclick="playRoulette('black')">Schwarz (x2)</button>
+              <button class="action-btn" style="background:#ef4444;color:#fff;" onclick="playRoulette('red')">Rot (x2)</button>
+              <button class="action-btn" style="background:#10b981;color:#fff;" onclick="playRoulette('green')">Grün (x14)</button>
+              <button class="action-btn" style="background:#334155;color:#fff;" onclick="playRoulette('black')">Schwarz (x2)</button>
             </div>
             <div class="status-msg" id="statusMsg"></div>
           `;
-          drawRouletteWheel(0);
+          drawRouletteWheel(0, null);
           break;
 
         case 'coinflip':
           container.innerHTML = `
             <h2>Coinflip</h2>
-            <div class="coin-box" id="coinBox">KOPF</div>
+            <div class="coin" id="coinBox">KOPF</div>
             ${getBetUI()}
             <div class="controls">
-              <button class="action-btn" style="margin:0;" onclick="playCoinflip('Kopf')">Kopf</button>
-              <button class="action-btn" style="margin:0;" onclick="playCoinflip('Zahl')">Zahl</button>
+              <button class="action-btn" onclick="playCoinflip('Kopf')">Kopf</button>
+              <button class="action-btn" onclick="playCoinflip('Zahl')">Zahl</button>
             </div>
             <div class="status-msg" id="statusMsg"></div>
           `;
@@ -379,21 +277,27 @@
 
         case 'mines':
           container.innerHTML = `
-            <h2>Mines</h2>
+            <h2>Mines (1 Mine im 3x3 Feld)</h2>
             <div class="grid-3x3" id="minesGrid"></div>
             ${getBetUI()}
-            <button class="action-btn" onclick="startMines()">Neues Feld starten</button>
+            <div class="controls">
+              <button class="action-btn" id="startMinesBtn" onclick="startMines()">Spiel Starten</button>
+              <button class="action-btn" id="cashoutMinesBtn" style="background:#10b981;color:#fff;display:none;" onclick="cashoutMines()">Cashout</button>
+            </div>
             <div class="status-msg" id="statusMsg"></div>
           `;
-          initMinesUI();
+          renderEmptyMinesGrid();
           break;
 
-        case 'blackjack':
+        case 'baccarat':
           container.innerHTML = `
-            <h2>Blackjack</h2>
-            <div style="font-size: 3rem; margin: 15px;">🃏</div>
+            <h2>Baccarat</h2>
+            <div style="font-size:2rem; margin:15px 0;">🎴 vs 🎴</div>
             ${getBetUI()}
-            <button class="action-btn" onclick="playBlackjack()">Spielen</button>
+            <div class="controls">
+              <button class="action-btn" onclick="playBaccarat('player')">Spieler (x2)</button>
+              <button class="action-btn" onclick="playBaccarat('banker')">Bankier (x1.95)</button>
+            </div>
             <div class="status-msg" id="statusMsg"></div>
           `;
           break;
@@ -401,7 +305,7 @@
         case 'dice':
           container.innerHTML = `
             <h2>Würfel (Gewinn bei > 3)</h2>
-            <div style="font-size: 3rem; margin: 15px;" id="diceBox">🎲</div>
+            <div style="font-size: 3.5rem; margin: 10px;" id="diceBox">🎲</div>
             ${getBetUI()}
             <button class="action-btn" onclick="playDice()">Würfeln</button>
             <div class="status-msg" id="statusMsg"></div>
@@ -416,17 +320,17 @@
             <button class="action-btn" onclick="playWheel()">Rad drehen</button>
             <div class="status-msg" id="statusMsg"></div>
           `;
-          drawSimpleWheel(0);
+          drawWheel(0);
           break;
 
         case 'higherlower':
           container.innerHTML = `
             <h2>Höher oder Tiefer</h2>
-            <div style="margin:15px 0; font-size: 1.5rem;">Aktuelle Karte: <strong id="hlVal" style="color:var(--accent)">7</strong></div>
+            <div style="margin:15px 0; font-size: 1.4rem;">Aktuelle Karte: <strong id="hlVal" style="color:var(--accent)">7</strong></div>
             ${getBetUI()}
             <div class="controls">
-              <button class="action-btn" style="margin:0;" onclick="playHL('higher')">Höher ⬆️</button>
-              <button class="action-btn" style="margin:0;" onclick="playHL('lower')">Tiefer ⬇️</button>
+              <button class="action-btn" onclick="playHL('higher')">Höher ⬆️</button>
+              <button class="action-btn" onclick="playHL('lower')">Tiefer ⬇️</button>
             </div>
             <div class="status-msg" id="statusMsg"></div>
           `;
@@ -437,7 +341,7 @@
             <h2>Keno (Zahl 1-5 tippen)</h2>
             ${getBetUI()}
             <div class="controls" style="margin-top:15px;">
-              ${[1,2,3,4,5].map(n => `<button class="action-btn" style="margin:0;" onclick="playKeno(${n})">${n}</button>`).join('')}
+              ${[1,2,3,4,5].map(n => `<button class="action-btn" onclick="playKeno(${n})">${n}</button>`).join('')}
             </div>
             <div class="status-msg" id="statusMsg"></div>
           `;
@@ -445,188 +349,341 @@
       }
     }
 
-    // SLOTS
+    /* 1. SLOTS LOGIK */
+    let slotReelsCount = 3;
+    const slotSymbols = ['🍒', '🍋', '🍊', '💎', '7️⃣', '🔔'];
+
+    function setSlotReels(num) {
+      slotReelsCount = num;
+      renderSlotReels();
+    }
+
+    function renderSlotReels() {
+      const wrapper = document.getElementById('slotMachineWrapper');
+      if (!wrapper) return;
+      wrapper.innerHTML = '';
+      for (let i = 0; i < slotReelsCount; i++) {
+        wrapper.innerHTML += `
+          <div class="slot-reel-container">
+            <div class="slot-reel-strip" id="strip${i}">
+              <div class="slot-symbol">🍒</div>
+            </div>
+          </div>
+        `;
+      }
+    }
+
     function playSlots() {
       const bet = checkBet(); if (!bet) return;
       updateBalance(-bet);
-      showMsg("Walzen drehen...", "");
-      const syms = ['🍒', '🍋', '💎', '🔔', '7️⃣'];
-      const r0 = document.getElementById('reel0'), r1 = document.getElementById('reel1'), r2 = document.getElementById('reel2');
-      r0.classList.add('spinning'); r1.classList.add('spinning'); r2.classList.add('spinning');
+      showMsg("Walzen laufen...", "");
+      document.getElementById('slotSpinBtn').disabled = true;
+
+      const finalResults = [];
+      for (let i = 0; i < slotReelsCount; i++) {
+        const strip = document.getElementById(`strip${i}`);
+        let stripContent = '';
+        for (let s = 0; s < 15; s++) {
+          stripContent += `<div class="slot-symbol">${slotSymbols[Math.floor(Math.random() * slotSymbols.length)]}</div>`;
+        }
+        const winSym = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
+        finalResults.push(winSym);
+        stripContent += `<div class="slot-symbol">${winSym}</div>`;
+        
+        strip.innerHTML = stripContent;
+        strip.style.transition = 'none';
+        strip.style.transform = 'translateY(0px)';
+
+        setTimeout(() => {
+          strip.style.transition = `transform ${1.2 + i * 0.3}s cubic-bezier(0.1, 0.9, 0.2, 1)`;
+          strip.style.transform = `translateY(-${15 * 80}px)`;
+        }, 50);
+      }
 
       setTimeout(() => {
-        r0.classList.remove('spinning'); r1.classList.remove('spinning'); r2.classList.remove('spinning');
-        const s0 = syms[Math.floor(Math.random()*syms.length)];
-        const s1 = syms[Math.floor(Math.random()*syms.length)];
-        const s2 = syms[Math.floor(Math.random()*syms.length)];
-        r0.innerText = s0; r1.innerText = s1; r2.innerText = s2;
-
-        if (s0 === s1 && s1 === s2) {
-          const win = bet * 5; updateBalance(win); showMsg(`JACKPOT! +${win.toFixed(2)}€`, 'win');
-        } else if (s0 === s1 || s1 === s2 || s0 === s2) {
-          const win = bet * 1.5; updateBalance(win); showMsg(`2x Match! +${win.toFixed(2)}€`, 'win');
+        document.getElementById('slotSpinBtn').disabled = false;
+        const matches = finalResults.filter(s => s === finalResults[0]).length;
+        if (matches === slotReelsCount) {
+          const win = bet * (slotReelsCount * 3);
+          updateBalance(win);
+          showMsg(`🎉 VOLLTREFFER! +${win.toFixed(2)}€`, 'win');
+        } else if (matches >= 2) {
+          const win = bet * 1.5;
+          updateBalance(win);
+          showMsg(`✨ Teiltreffer! +${win.toFixed(2)}€`, 'win');
         } else {
-          showMsg("Leider verloren.", "lose");
+          showMsg("Leider kein Gewinn.", "lose");
         }
-      }, 600);
+      }, 1200 + slotReelsCount * 300);
     }
 
-    // PLINKO
+    /* 2. PLINKO LOGIK (ANGEPASSTE MULTIPLIKATOREN & WAHRSCHEINLICHKEITEN) */
+    const plinkoMults = [4, 2, 1, 0.5, 0.2, 0.5, 1, 2, 4];
+    // Je höher der Gewinn, desto kleiner die Wahrscheinlichkeits-Gewichtung!
+    // 0.2x in der Mitte ist am häufigsten (Gewichtung 35), 4x an den Rändern am seltensten (Gewichtung 1)
+    const plinkoWeights = [1, 4, 12, 22, 35, 22, 12, 4, 1];
+
     function drawPlinkoBoard() {
       const cvs = document.getElementById('plinkoCanvas');
       if (!cvs) return;
       const ctx = cvs.getContext('2d');
-      ctx.clearRect(0,0,320,260);
+      ctx.clearRect(0,0,380,280);
+
+      // Pins (9 Spalten unten)
       ctx.fillStyle = '#94a3b8';
-      for (let r=2; r<=6; r++) {
-        for (let c=0; c<=r; c++) {
-          ctx.beginPath(); ctx.arc(160 - (r*16) + (c*32), r*30, 3, 0, Math.PI*2); ctx.fill();
+      for (let r = 2; r <= 8; r++) {
+        for (let c = 0; c <= r; c++) {
+          ctx.beginPath();
+          ctx.arc(190 - (r * 18) + (c * 36), r * 26, 3, 0, Math.PI * 2);
+          ctx.fill();
         }
       }
-      const mults = ['5x', '2x', '1x', '1x', '2x', '5x'];
-      ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center';
-      for (let i=0; i<mults.length; i++) {
-        ctx.fillStyle = (i===2 || i===3) ? '#f59e0b' : '#10b981';
-        ctx.fillRect(15 + i*48, 220, 38, 22);
-        ctx.fillStyle = '#000'; ctx.fillText(mults[i], 34 + i*48, 235);
+
+      // Multiplikatoren: 4x, 2x, 1x, 0.5x, 0.2x, 0.5x, 1x, 2x, 4x
+      const labels = ['4x', '2x', '1x', '0.5x', '0.2x', '0.5x', '1x', '2x', '4x'];
+      ctx.font = 'bold 10px sans-serif';
+      ctx.textAlign = 'center';
+      for (let i = 0; i < labels.length; i++) {
+        if (labels[i] === '4x') ctx.fillStyle = '#ef4444';
+        else if (labels[i] === '2x') ctx.fillStyle = '#f97316';
+        else if (labels[i] === '1x') ctx.fillStyle = '#f59e0b';
+        else if (labels[i] === '0.5x') ctx.fillStyle = '#10b981';
+        else ctx.fillStyle = '#334155'; // 0.2x in der Mitte
+
+        ctx.fillRect(12 + i * 40, 230, 36, 22);
+        ctx.fillStyle = '#fff';
+        ctx.fillText(labels[i], 30 + i * 40, 245);
       }
     }
 
     function playPlinko() {
       const bet = checkBet(); if (!bet) return;
       updateBalance(-bet);
-      const mults = [5, 2, 1, 1, 2, 5];
-      const idx = Math.floor(Math.random() * mults.length);
-      const mult = mults[idx];
-      let y = 30, x = 160, targetX = 34 + idx * 48;
 
+      // Zufalls-Berechnung basierend auf den Wahrscheinlichkeiten
+      let totalW = plinkoWeights.reduce((a,b)=>a+b, 0);
+      let rand = Math.random() * totalW;
+      let targetIdx = 0;
+
+      for (let i = 0; i < plinkoWeights.length; i++) {
+        if (rand < plinkoWeights[i]) { targetIdx = i; break; }
+        rand -= plinkoWeights[i];
+      }
+
+      let y = 30, x = 190, targetX = 30 + targetIdx * 40;
       const t = setInterval(() => {
-        y += 10; x += (targetX - x) * 0.15;
+        y += 8;
+        x += (targetX - x) * 0.1;
         drawPlinkoBoard();
         const cvs = document.getElementById('plinkoCanvas');
         const ctx = cvs.getContext('2d');
-        ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI*2); ctx.fill();
-        if (y >= 210) {
+        ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI*2); ctx.fill();
+
+        if (y >= 220) {
           clearInterval(t);
-          const win = bet * mult; updateBalance(win);
+          const mult = plinkoMults[targetIdx];
+          const win = bet * mult;
+          updateBalance(win);
           showMsg(`Plinko ${mult}x! Gewinn: +${win.toFixed(2)}€`, mult >= 1 ? 'win' : 'lose');
         }
-      }, 30);
+      }, 25);
     }
 
-    // ROULETTE
-    function drawRouletteWheel(ang) {
+    /* 3. ROULETTE LOGIK */
+    const rouletteNumbers = [
+      { num: 0, color: 'green' }, { num: 32, color: 'red' }, { num: 15, color: 'black' },
+      { num: 19, color: 'red' }, { num: 4, color: 'black' }, { num: 21, color: 'red' },
+      { num: 2, color: 'black' }, { num: 25, color: 'red' }, { num: 17, color: 'black' },
+      { num: 34, color: 'red' }, { num: 6, color: 'black' }, { num: 27, color: 'red' }
+    ];
+    let currentWheelAngle = 0;
+
+    function drawRouletteWheel(ang, ballIdx = null) {
       const cvs = document.getElementById('rouletteCanvas');
       if (!cvs) return;
       const ctx = cvs.getContext('2d');
-      ctx.clearRect(0,0,240,240);
-      for (let i=0; i<12; i++) {
-        ctx.beginPath(); ctx.fillStyle = i===0 ? '#10b981' : (i%2===0 ? '#ef4444' : '#1e293b');
-        ctx.moveTo(120,120); ctx.arc(120,120,100, ang + i*(Math.PI/6), ang + (i+1)*(Math.PI/6)); ctx.fill();
+      ctx.clearRect(0,0,250,250);
+
+      const slices = rouletteNumbers.length;
+      const arc = (Math.PI * 2) / slices;
+
+      for (let i = 0; i < slices; i++) {
+        const item = rouletteNumbers[i];
+        ctx.beginPath();
+        ctx.fillStyle = item.color === 'green' ? '#10b981' : (item.color === 'red' ? '#ef4444' : '#1e293b');
+        ctx.moveTo(125,125);
+        ctx.arc(125,125,100, ang + i * arc, ang + (i + 1) * arc);
+        ctx.fill();
       }
-      ctx.fillStyle = '#0a0d14'; ctx.beginPath(); ctx.arc(120,120,35,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(120,25,6,0,Math.PI*2); ctx.fill();
+
+      ctx.fillStyle = '#0a0d14'; ctx.beginPath(); ctx.arc(125,125,40,0,Math.PI*2); ctx.fill();
+
+      if (ballIdx !== null) {
+        const ballAng = ang + ballIdx * arc + arc / 2;
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(125 + Math.cos(ballAng) * 75, 125 + Math.sin(ballAng) * 75, 7, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
 
     function playRoulette(choice) {
       const bet = checkBet(); if (!bet) return;
-      updateBalance(-bet); showMsg("Rad dreht...", "");
-      let ang = 0, speed = 0.4;
+      updateBalance(-bet); showMsg("Kugel rollt...", "");
+
+      const winnerIdx = Math.floor(Math.random() * rouletteNumbers.length);
+      const winner = rouletteNumbers[winnerIdx];
+
+      let speed = 0.3;
       const t = setInterval(() => {
-        ang += speed; speed *= 0.96;
-        drawRouletteWheel(ang);
-        if (speed < 0.01) {
+        currentWheelAngle += speed;
+        speed *= 0.97;
+        drawRouletteWheel(currentWheelAngle, winnerIdx);
+
+        if (speed < 0.005) {
           clearInterval(t);
-          const r = Math.random();
-          let col = r < 0.08 ? 'green' : (r < 0.54 ? 'red' : 'black');
-          if (choice === col) {
-            const win = bet * (col==='green'?14:2); updateBalance(win);
-            showMsg(`Roulette ${col.toUpperCase()}! +${win.toFixed(2)}€`, 'win');
+          drawRouletteWheel(currentWheelAngle, winnerIdx);
+          if (choice === winner.color) {
+            const mult = winner.color === 'green' ? 14 : 2;
+            const win = bet * mult;
+            updateBalance(win);
+            showMsg(`Kugel stoppt auf ${winner.num} (${winner.color.toUpperCase()})! +${win.toFixed(2)}€`, 'win');
           } else {
-            showMsg(`Roulette ${col.toUpperCase()}. Verloren.`, 'lose');
+            showMsg(`Kugel stoppt auf ${winner.num} (${winner.color.toUpperCase()}). Verloren!`, 'lose');
           }
         }
       }, 30);
     }
 
-    // COINFLIP
+    /* 4. COINFLIP LOGIK */
     function playCoinflip(choice) {
       const bet = checkBet(); if (!bet) return;
       updateBalance(-bet);
-      const box = document.getElementById('coinBox');
+
+      const coinBox = document.getElementById('coinBox');
       const isHeads = Math.random() < 0.5;
-      box.style.transform = `rotateY(720deg)`;
+      const result = isHeads ? 'Kopf' : 'Zahl';
+
+      coinBox.style.transform = 'rotateY(720deg)';
       setTimeout(() => {
-        box.style.transform = 'rotateY(0deg)';
-        const res = isHeads ? 'Kopf' : 'Zahl';
-        box.innerText = res.toUpperCase();
-        if (choice === res) {
-          const win = bet * 2; updateBalance(win); showMsg(`Richtig (${res})! +${win.toFixed(2)}€`, 'win');
+        coinBox.style.transform = 'rotateY(0deg)';
+        coinBox.innerText = result.toUpperCase();
+        if (choice === result) {
+          const win = bet * 2; updateBalance(win);
+          showMsg(`Richtig! Es ist ${result}. +${win.toFixed(2)}€`, 'win');
         } else {
-          showMsg(`Falsch (${res}).`, 'lose');
+          showMsg(`Falsch! Es war ${result}.`, 'lose');
         }
-      }, 700);
+      }, 600);
     }
 
-    // MINES
-    let mineLoc = -1, mineActive = false;
-    function initMinesUI() {
+    /* 5. MINES LOGIK */
+    let minesMinePos = -1;
+    let minesActive = false;
+    let minesBet = 0;
+    let minesRevealedCount = 0;
+
+    function renderEmptyMinesGrid() {
       const grid = document.getElementById('minesGrid');
       grid.innerHTML = '';
-      for (let i=0; i<9; i++) {
-        grid.innerHTML += `<button class="grid-btn" id="m${i}" onclick="clickMine(${i})">❓</button>`;
+      for (let i = 0; i < 9; i++) {
+        grid.innerHTML += `<button class="grid-btn" disabled>❓</button>`;
       }
-      mineActive = false;
     }
+
     function startMines() {
       const bet = checkBet(); if (!bet) return;
-      mineLoc = Math.floor(Math.random() * 9);
-      mineActive = true;
-      initMinesUI();
-      showMsg("Wähle ein Feld!", "");
+      updateBalance(-bet);
+      minesBet = bet;
+      minesMinePos = Math.floor(Math.random() * 9);
+      minesActive = true;
+      minesRevealedCount = 0;
+
+      const grid = document.getElementById('minesGrid');
+      grid.innerHTML = '';
+      for (let i = 0; i < 9; i++) {
+        grid.innerHTML += `<button class="grid-btn" id="mBtn${i}" onclick="clickMine(${i})">❓</button>`;
+      }
+
+      document.getElementById('startMinesBtn').style.display = 'none';
+      document.getElementById('cashoutMinesBtn').style.display = 'inline-block';
+      showMsg("Feld gestartet! Aufdecke Diamanten.", "");
     }
+
     function clickMine(idx) {
-      if (!mineActive) { showMsg("Starte zuerst ein neues Feld!", "lose"); return; }
-      const bet = checkBet(); if (!bet) return;
-      const btn = document.getElementById(`m${idx}`);
-      if (idx === mineLoc) {
+      if (!minesActive) return;
+      const btn = document.getElementById(`mBtn${idx}`);
+
+      if (idx === minesMinePos) {
         btn.innerText = '💣'; btn.style.background = '#ef4444';
-        mineActive = false; updateBalance(-bet); showMsg("BOOM! Mine getroffen.", "lose");
+        minesActive = false;
+        showMsg("BOOM! Eine Mine getroffen. Einsatz verloren!", "lose");
+        resetMinesControls();
       } else {
         btn.innerText = '💎'; btn.style.background = '#10b981'; btn.disabled = true;
-        const win = bet * 1.4; updateBalance(win - bet); showMsg(`Diamant! +${(win-bet).toFixed(2)}€`, 'win');
+        minesRevealedCount++;
+        const currentMultiplier = 1 + (minesRevealedCount * 0.35);
+        const winValue = minesBet * currentMultiplier;
+        showMsg(`${minesRevealedCount} Diamant(en)! Aktueller Gewinn: ${winValue.toFixed(2)}€`, 'win');
+
+        if (minesRevealedCount === 8) {
+          cashoutMines();
+        }
       }
     }
 
-    // BLACKJACK
-    function playBlackjack() {
+    function cashoutMines() {
+      if (!minesActive) return;
+      const currentMultiplier = 1 + (minesRevealedCount * 0.35);
+      const win = minesBet * currentMultiplier;
+      updateBalance(win);
+      showMsg(`CASH OUT! Gewinn: +${win.toFixed(2)}€`, 'win');
+      minesActive = false;
+      resetMinesControls();
+    }
+
+    function resetMinesControls() {
+      document.getElementById('startMinesBtn').style.display = 'inline-block';
+      document.getElementById('cashoutMinesBtn').style.display = 'none';
+    }
+
+    /* 6. BACCARAT */
+    function playBaccarat(choice) {
       const bet = checkBet(); if (!bet) return;
       updateBalance(-bet);
-      const p = Math.floor(Math.random()*8)+14, d = Math.floor(Math.random()*8)+14;
-      if (p > d && p <= 21) {
-        const win = bet * 2; updateBalance(win); showMsg(`Du: ${p} vs Dealer: ${d}. +${win.toFixed(2)}€`, 'win');
-      } else if (p === d) {
-        updateBalance(bet); showMsg(`Unentschieden (${p}:${d}).`, '');
+      const playerVal = Math.floor(Math.random() * 10);
+      const bankerVal = Math.floor(Math.random() * 10);
+
+      let winner = 'tie';
+      if (playerVal > bankerVal) winner = 'player';
+      else if (bankerVal > playerVal) winner = 'banker';
+
+      if (choice === winner) {
+        const mult = winner === 'player' ? 2 : 1.95;
+        const win = bet * mult; updateBalance(win);
+        showMsg(`Spieler: ${playerVal} | Bankier: ${bankerVal}. Gewinn: +${win.toFixed(2)}€`, 'win');
+      } else if (winner === 'tie') {
+        updateBalance(bet); showMsg(`Unentschieden (${playerVal}:${bankerVal})! Einsatz zurück.`, '');
       } else {
-        showMsg(`Dealer gewinnt (${d} vs ${p}).`, 'lose');
+        showMsg(`Spieler: ${playerVal} | Bankier: ${bankerVal}. Verloren!`, 'lose');
       }
     }
 
-    // DICE
+    /* 7. DICE */
     function playDice() {
       const bet = checkBet(); if (!bet) return;
       updateBalance(-bet);
       const roll = Math.floor(Math.random() * 6) + 1;
       document.getElementById('diceBox').innerText = `🎲 ${roll}`;
       if (roll > 3) {
-        const win = bet * 1.8; updateBalance(win); showMsg(`Gewürfelt ${roll}! +${win.toFixed(2)}€`, 'win');
+        const win = bet * 1.8; updateBalance(win); showMsg(`Gewürfelt: ${roll}! Gewinn: +${win.toFixed(2)}€`, 'win');
       } else {
-        showMsg(`Gewürfelt ${roll}. Verloren.`, 'lose');
+        showMsg(`Gewürfelt: ${roll}. Verloren!`, 'lose');
       }
     }
 
-    // WHEEL
-    function drawSimpleWheel(ang) {
+    /* 8. WHEEL */
+    function drawWheel(ang) {
       const cvs = document.getElementById('wheelCanvas');
       if (!cvs) return;
       const ctx = cvs.getContext('2d');
@@ -646,15 +703,15 @@
       const mults = [0, 1.5, 2, 0.5, 5, 1];
       const mult = mults[Math.floor(Math.random() * mults.length)];
       let ang = 0;
-      const t = setInterval(() => { ang += 0.3; drawSimpleWheel(ang); }, 30);
+      const t = setInterval(() => { ang += 0.3; drawWheel(ang); }, 30);
       setTimeout(() => {
         clearInterval(t);
         const win = bet * mult; updateBalance(win);
-        showMsg(`Rad bei ${mult}x! +${win.toFixed(2)}€`, mult >= 1 ? 'win' : 'lose');
+        showMsg(`Rad stoppt bei ${mult}x! +${win.toFixed(2)}€`, mult >= 1 ? 'win' : 'lose');
       }, 800);
     }
 
-    // HIGHER / LOWER
+    /* 9. HIGHER/LOWER */
     let hlVal = 7;
     function playHL(choice) {
       const bet = checkBet(); if (!bet) return;
@@ -663,14 +720,14 @@
       document.getElementById('hlVal').innerText = next;
       const win = (choice === 'higher' && next >= hlVal) || (choice === 'lower' && next <= hlVal);
       if (win) {
-        const prize = bet * 1.8; updateBalance(prize); showMsg(`Karte ${next}! +${prize.toFixed(2)}€`, 'win');
+        const prize = bet * 1.8; updateBalance(prize); showMsg(`Karte war ${next}! +${prize.toFixed(2)}€`, 'win');
       } else {
-        showMsg(`Karte war ${next}. Verloren.`, 'lose');
+        showMsg(`Karte war ${next}. Verloren!`, 'lose');
       }
       hlVal = next;
     }
 
-    // KENO
+    /* 10. KENO */
     function playKeno(choice) {
       const bet = checkBet(); if (!bet) return;
       updateBalance(-bet);
@@ -678,10 +735,11 @@
       if (choice === drawn) {
         const win = bet * 4; updateBalance(win); showMsg(`Treffer (${drawn})! +${win.toFixed(2)}€`, 'win');
       } else {
-        showMsg(`Zahl war ${drawn}. Verloren.`, 'lose');
+        showMsg(`Zahl war ${drawn}. Verloren!`, 'lose');
       }
     }
 
+    // Start
     initNav();
     renderGame();
     updateBalance(0);
