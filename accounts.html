@@ -16,30 +16,35 @@
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
     body { background-color: var(--bg-dark); color: var(--text); padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-    .container { width: 100%; max-width: 850px; background: var(--card-bg); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 16px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
+    .container { width: 100%; max-width: 900px; background: var(--card-bg); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 16px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
     h1 { color: var(--accent); margin-bottom: 5px; text-align: center; }
     p { color: #94a3b8; text-align: center; margin-bottom: 20px; font-size: 0.9rem; }
     
     .stats-summary-card {
       background: #0f172a; border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 12px;
-      padding: 15px; margin-bottom: 20px; display: flex; justify-content: space-around; text-align: center;
+      padding: 15px; margin-bottom: 20px; display: flex; justify-content: space-around; text-align: center; flex-wrap: wrap; gap: 10px;
     }
     .stat-box h3 { color: var(--accent); font-size: 1.4rem; margin-top: 4px; }
     .stat-box label { font-size: 0.8rem; color: #94a3b8; }
 
     .account-card { background: #0f172a; border: 1px solid rgba(255,255,255,0.05); margin: 10px 0; border-radius: 10px; overflow: hidden; }
-    .account-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; cursor: pointer; }
+    .account-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; cursor: pointer; flex-wrap: wrap; gap: 10px; }
     .account-header:hover { background: rgba(255,255,255,0.02); }
     
     .btn { background: var(--accent); color: #000; font-weight: bold; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
     .btn-danger { background: var(--danger); color: #fff; }
     .btn-success { background: var(--success); color: #fff; }
     .btn-info { background: var(--info); color: #fff; }
-    .action-group { display: flex; gap: 6px; align-items: center; }
+    .action-group { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+
+    .custom-money-input { width: 85px; padding: 5px; background: #1e293b; border: 1px solid #475569; color: #fff; border-radius: 6px; text-align: center; font-weight: bold; }
 
     .stats-details { display: none; padding: 15px; border-top: 1px solid rgba(255,255,255,0.08); background: #080d1a; font-size: 0.85rem; }
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 10px; }
+    .stats-layout { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: space-between; margin-top: 10px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; flex: 1; }
     .stat-item { background: rgba(255,255,255,0.03); padding: 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); }
+
+    .pie-chart-box { width: 140px; height: 140px; position: relative; display: flex; align-items: center; justify-content: center; }
 
     .back-link { display: inline-block; margin-top: 20px; color: var(--accent); text-decoration: none; font-weight: bold; }
   </style>
@@ -47,8 +52,8 @@
 <body>
 
   <div class="container">
-    <h1>👑 Admin & Gesamt-Statistiken</h1>
-    <p>Klicke auf einen Account, um seine detaillierten Spielstatistiken auszuklappen.</p>
+    <h1>👑 Admin & Spieler-Statistiken</h1>
+    <p>Admin-Werte sind ausgeblendet. Klicke auf einen Spieler, um das Kreisdiagramm und Details zu sehen.</p>
     
     <div class="stats-summary-card" id="globalStats"></div>
 
@@ -64,23 +69,24 @@
       const globalStatsDiv = document.getElementById('globalStats');
       listDiv.innerHTML = '';
 
-      let totalUsers = 0;
-      let totalMoney = 0;
-      let totalGamesPlayed = 0;
+      let totalPlayerUsers = 0;
+      let totalPlayerMoney = 0;
+      let totalPlayerGamesPlayed = 0;
 
       for (let acc in allAccounts) {
-        totalUsers++;
-        totalMoney += allAccounts[acc].balance || 0;
+        if (acc.toLowerCase() === 'admin') continue; // Admin ausrechnen
+        totalPlayerUsers++;
+        totalPlayerMoney += allAccounts[acc].balance || 0;
         let stats = allAccounts[acc].stats || {};
         for (let g in stats) {
-          totalGamesPlayed += stats[g].plays || 0;
+          totalPlayerGamesPlayed += stats[g].plays || 0;
         }
       }
 
       globalStatsDiv.innerHTML = `
-        <div class="stat-box"><label>Registrierte Accounts</label><h3>${totalUsers}</h3></div>
-        <div class="stat-box"><label>Gesamt-Guthaben</label><h3>${totalMoney.toFixed(2)} €</h3></div>
-        <div class="stat-box"><label>Gespielte Runden</label><h3>${totalGamesPlayed}</h3></div>
+        <div class="stat-box"><label>Spieler-Accounts</label><h3>${totalPlayerUsers}</h3></div>
+        <div class="stat-box"><label>Gesamt-Guthaben (ohne Admin)</label><h3>${totalPlayerMoney.toFixed(2)} €</h3></div>
+        <div class="stat-box"><label>Gespielte Runden (ohne Admin)</label><h3>${totalPlayerGamesPlayed}</h3></div>
       `;
 
       if (Object.keys(allAccounts).length === 0) {
@@ -108,8 +114,6 @@
             <div class="stat-item">
               <strong style="color:var(--accent);">${gameId.toUpperCase()}</strong><br>
               Spiele: ${st.plays}<br>
-              Einsatz: ${st.totalBet.toFixed(2)}€<br>
-              Gewinn: ${st.totalWin.toFixed(2)}€<br>
               G/V: <span style="color:${diff>=0?'var(--success)':'var(--danger)'}">${diff>=0?'+':''}${diff.toFixed(2)}€</span>
             </div>
           `;
@@ -126,22 +130,68 @@
                 <strong>${acc}</strong> ${data.isAdmin ? '👑 (Admin)' : ''}
                 <div style="font-size:0.8rem; color:#94a3b8;">
                   Guthaben: <span style="color:var(--success); font-weight:bold;">${data.balance.toFixed(2)}€</span> | 
-                  Spiele gesamt: <strong>${userTotalPlays}</strong>
+                  Spiele: <strong>${userTotalPlays}</strong>
                 </div>
               </div>
               <div class="action-group" onclick="event.stopPropagation()">
-                <button class="btn btn-success" onclick="modifyMoney('${acc}', 100)">+100€</button>
+                <input type="number" id="customAmount-${acc}" class="custom-money-input" value="50" step="10">
+                <button class="btn btn-success" onclick="modifyCustomMoney('${acc}', 1)">+ Betrag</button>
+                <button class="btn btn-danger" onclick="modifyCustomMoney('${acc}', -1)">- Betrag</button>
                 <button class="btn btn-info" onclick="changePin('${acc}')">PIN</button>
-                <button class="btn btn-danger" onclick="deleteAccount('${acc}')">🗑️ Löschen</button>
+                ${acc.toLowerCase() !== 'admin' ? `<button class="btn btn-danger" onclick="deleteAccount('${acc}')">🗑️</button>` : ''}
               </div>
             </div>
             <div class="stats-details" id="stats-${acc}">
               <strong style="color:#fff;">Statistiken für ${acc}:</strong>
               <div style="margin: 5px 0;">Gesamteinsatz: ${userTotalBet.toFixed(2)}€ | Gesamtgewinn: ${userTotalWin.toFixed(2)}€</div>
-              <div class="stats-grid">${statsHtml}</div>
+              <div class="stats-layout">
+                <div class="stats-grid">${statsHtml}</div>
+                <div class="pie-chart-box">
+                  <canvas id="pie-${acc}" width="130" height="130"></canvas>
+                </div>
+              </div>
             </div>
           </div>
         `;
+
+        // Kreisdiagramm nach dem Rendern zeichnen
+        setTimeout(() => drawPieChart(acc, stats), 50);
+      }
+    }
+
+    function drawPieChart(acc, stats) {
+      const cvs = document.getElementById(`pie-${acc}`);
+      if (!cvs) return;
+      const ctx = cvs.getContext('2d');
+      ctx.clearRect(0, 0, 130, 130);
+
+      let totalPlays = 0;
+      let data = [];
+      const colors = ['#f59e0b', '#3b82f6', '#10b981', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
+
+      for (let g in stats) {
+        totalPlays += stats[g].plays || 0;
+        data.push({ label: g, plays: stats[g].plays });
+      }
+
+      if (totalPlays === 0) {
+        ctx.fillStyle = '#334155';
+        ctx.beginPath(); ctx.arc(65, 65, 50, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#94a3b8'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('Keine Daten', 65, 69);
+        return;
+      }
+
+      let startAngle = 0;
+      for (let i = 0; i < data.length; i++) {
+        let sliceAngle = (data[i].plays / totalPlays) * (Math.PI * 2);
+        ctx.fillStyle = colors[i % colors.length];
+        ctx.beginPath();
+        ctx.moveTo(65, 65);
+        ctx.arc(65, 65, 55, startAngle, startAngle + sliceAngle);
+        ctx.closePath();
+        ctx.fill();
+        startAngle += sliceAngle;
       }
     }
 
@@ -152,10 +202,12 @@
       }
     }
 
-    function modifyMoney(acc, amount) {
+    function modifyCustomMoney(acc, multiplier) {
+      const inputEl = document.getElementById(`customAmount-${acc}`);
+      const val = parseFloat(inputEl.value) || 0;
       let allAccounts = JSON.parse(localStorage.getItem('casino_all_accounts')) || {};
       if (allAccounts[acc]) {
-        allAccounts[acc].balance += amount;
+        allAccounts[acc].balance += val * multiplier;
         localStorage.setItem('casino_all_accounts', JSON.stringify(allAccounts));
         loadAccounts();
       }
@@ -168,23 +220,20 @@
         if (allAccounts[acc]) {
           allAccounts[acc].pin = newPin.trim();
           localStorage.setItem('casino_all_accounts', JSON.stringify(allAccounts));
-          alert(`PIN für "${acc}" erfolgreich auf "${newPin.trim()}" geändert!`);
+          alert(`PIN für "${acc}" erfolgreich geändert!`);
           loadAccounts();
         }
       }
     }
 
-    /* MACHTVOLLES LÖSCHEN MIT DOPPELTER BESTÄTIGUNG */
     function deleteAccount(acc) {
       if (acc.toLowerCase() === 'admin') {
         alert("Der Haupt-Admin-Account kann nicht gelöscht werden!");
         return;
       }
 
-      // ERSTE BESTÄTIGUNG
       let confirm1 = confirm(`WARNUNG: Möchtest du den Account "${acc}" wirklich unwiderruflich LÖSCHEN?`);
       if (confirm1) {
-        // ZWEITE DOPPELTE BESTÄTIGUNG
         let confirm2 = confirm(`BIST DU WIRKLICH SICHER?\nAlle Spieldaten und das Guthaben von "${acc}" werden endgültig gelöscht!`);
         if (confirm2) {
           let allAccounts = JSON.parse(localStorage.getItem('casino_all_accounts')) || {};
