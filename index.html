@@ -84,9 +84,15 @@
     .game-container {
       width: 100%; max-width: 950px; background: var(--card-bg);
       border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px;
-      padding: 25px; min-height: 500px; display: flex; flex-direction: column;
+      padding: 25px; min-height: 480px; display: flex; flex-direction: column;
       align-items: center; justify-content: center; box-shadow: 0 15px 35px rgba(0,0,0,0.6);
       text-align: center; position: relative;
+    }
+
+    .chart-container {
+      width: 100%; max-width: 950px; background: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px;
+      padding: 15px; margin-top: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     }
 
     .bet-container { margin-top: 15px; width: 100%; max-width: 600px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
@@ -203,6 +209,15 @@
   <div class="nav-grid" id="navGrid"></div>
   <div class="game-container" id="gameContainer"></div>
 
+  <!-- AKTIEN-STYLE KONTOGUTHABEN GRAPH -->
+  <div class="chart-container">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <strong style="font-size:0.9rem; color:var(--accent);">📈 Kontostands-Verlauf (Live & 5-Min-Ticker)</strong>
+      <span id="chartStatus" style="font-size:0.75rem; color:#94a3b8;">Aktiv</span>
+    </div>
+    <canvas id="balanceChart" style="width:100%; height:110px;"></canvas>
+  </div>
+
   <script>
     const GAMES = [
       { id: 'slots', name: 'Slots', icon: '🎰' },
@@ -220,7 +235,7 @@
     let allAccounts = JSON.parse(localStorage.getItem('casino_all_accounts')) || {};
     
     if (!allAccounts["admin"]) {
-      allAccounts["admin"] = { pin: ".1234MALIK", balance: 1000000, isAdmin: true, stats: {} };
+      allAccounts["admin"] = { pin: ".1234MALIK", balance: 1000000, isAdmin: true, stats: {}, balanceHistory: [] };
       localStorage.setItem('casino_all_accounts', JSON.stringify(allAccounts));
     }
 
@@ -238,6 +253,82 @@
       return ctx;
     }
 
+    function recordHistoryPoint() {
+      if (!currentAccountName) return;
+      allAccounts = JSON.parse(localStorage.getItem('casino_all_accounts')) || {};
+      let acc = allAccounts[currentAccountName];
+      if (!acc) return;
+      if (!acc.balanceHistory) acc.balanceHistory = [];
+      
+      const now = new Date();
+      const timeStr = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+      
+      acc.balanceHistory.push({ time: timeStr, val: acc.balance });
+      if (acc.balanceHistory.length > 25) acc.balanceHistory.shift(); // Max 25 Punkte behalten
+      saveAccounts();
+      drawBalanceChart();
+    }
+
+    function drawBalanceChart() {
+      const cvs = document.getElementById('balanceChart');
+      if (!cvs || !currentAccountName) return;
+      allAccounts = JSON.parse(localStorage.getItem('casino_all_accounts')) || {};
+      let acc = allAccounts[currentAccountName];
+      if (!acc || !acc.balanceHistory || acc.balanceHistory.length === 0) return;
+
+      const hist = acc.balanceHistory;
+      const width = cvs.parentElement.clientWidth - 30;
+      const height = 110;
+      const ctx = setupCanvasHD(cvs, width, height);
+
+      ctx.clearRect(0, 0, width, height);
+
+      const vals = hist.map(h => h.val);
+      const minVal = Math.min(...vals);
+      const maxVal = Math.max(...vals);
+      const range = maxVal - minVal === 0 ? 1 : maxVal - minVal;
+
+      const paddingX = 30;
+      const paddingY = 20;
+      const graphW = width - paddingX * 2;
+      const graphH = height - paddingY * 2;
+
+      // Achsen / Raster zeichnen
+      ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(paddingX, paddingY); ctx.lineTo(paddingX, height - paddingY);
+      ctx.lineTo(width - paddingX, height - paddingY);
+      ctx.stroke();
+
+      // Linie zeichnen
+      ctx.beginPath();
+      let points = [];
+      for (let i = 0; i < hist.length; i++) {
+        let x = paddingX + (i / (Math.max(1, hist.length - 1))) * graphW;
+        let y = (height - paddingY) - ((hist[i].val - minVal) / range) * graphH;
+        points.push({ x, y, val: hist[i].val, time: hist[i].time });
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+
+      let isProfit = hist[hist.length - 1].val >= hist[0].val;
+      ctx.strokeStyle = isProfit ? '#10b981' : '#ef4444';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      // Punkte & Letzter Wert
+      for (let p of points) {
+        ctx.fillStyle = isProfit ? '#10b981' : '#ef4444';
+        ctx.beginPath(); ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+
+    // 5-Minuten Ticker für Aktien-Chart
+    setInterval(() => {
+      recordHistoryPoint();
+    }, 300000);
+
     function recordGameStat(gameId, bet, win) {
       if (!currentAccountName) return;
       allAccounts = JSON.parse(localStorage.getItem('casino_all_accounts')) || {};
@@ -250,6 +341,7 @@
       acc.stats[gameId].totalBet += bet;
       acc.stats[gameId].totalWin += win;
       saveAccounts();
+      recordHistoryPoint();
     }
 
     function handleAuth() {
@@ -260,20 +352,22 @@
       allAccounts = JSON.parse(localStorage.getItem('casino_all_accounts')) || {};
 
       if (!allAccounts[u]) {
-        // Neuer Account wird automatisch registriert
         allAccounts[u] = { 
           pin: p, 
           balance: 100.00, 
           isAdmin: (u.toLowerCase() === 'admin'), 
-          stats: {} 
+          stats: {},
+          balanceHistory: [{ time: 'Start', val: 100.00 }]
         };
       } else {
-        // Bestehender Account -> PIN prüfen (Admin erzwingt immer den korrekten Admin-PIN)
         if (u.toLowerCase() === 'admin' && p !== '.1234MALIK' && allAccounts['admin'].pin !== p) {
           alert("Falscher PIN für Admin!"); return;
         }
         if (allAccounts[u].pin !== p) {
           alert("Falsches Passwort / PIN!"); return;
+        }
+        if (!allAccounts[u].balanceHistory) {
+          allAccounts[u].balanceHistory = [{ time: 'Start', val: allAccounts[u].balance }];
         }
       }
 
@@ -291,6 +385,7 @@
       initNav();
       renderGame();
       updateBalance(0);
+      setTimeout(drawBalanceChart, 200);
     }
 
     function logoutUser() {
@@ -321,6 +416,7 @@
       const bal = allAccounts[currentAccountName].balance;
       document.getElementById('balance').innerText = bal.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       document.getElementById('refillBtn').style.display = bal <= 0 ? 'block' : 'none';
+      recordHistoryPoint();
     }
 
     function refillBalance() {
@@ -623,7 +719,7 @@
 
     let plinkoPins = [], plinkoBalls = [], plinkoSlots = [];
     let plinkoLoopId = null;
-    const plinkoMults = [5, 2, 1.2, 0.5, 0.2, 0.5, 1.2, 2, 5];
+    const plinkoMults = [2.5, 1.5, 1, 0.4, 0.1, 0.4, 1, 1.5, 2.5]; // Fairness-Anpassung gegen zu hohes Gewinnen
 
     function initPlinkoEngine() {
       const cvs = document.getElementById('plinkoCanvas'); if (!cvs) return;
@@ -670,6 +766,31 @@
         ctx.fillText(s.mult + 'x', s.x + s.w / 2, 266);
       }
 
+      // Kugel-zu-Kugel Kollisionen prüfen
+      for (let i = 0; i < plinkoBalls.length; i++) {
+        for (let j = i + 1; j < plinkoBalls.length; j++) {
+          let b1 = plinkoBalls[i];
+          let b2 = plinkoBalls[j];
+          let dx = b2.x - b1.x;
+          let dy = b2.y - b1.y;
+          let dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < b1.r + b2.r) {
+            let overlap = (b1.r + b2.r) - dist;
+            let nx = dx / dist;
+            let ny = dy / dist;
+            b1.x -= nx * overlap * 0.5;
+            b1.y -= ny * overlap * 0.5;
+            b2.x += nx * overlap * 0.5;
+            b2.y += ny * overlap * 0.5;
+
+            // Geschwindigkeiten tauschen / abstoßen
+            let tempVx = b1.vx; let tempVy = b1.vy;
+            b1.vx = b2.vx * 0.8; b1.vy = b2.vy * 0.8;
+            b2.vx = tempVx * 0.8; b2.vy = tempVy * 0.8;
+          }
+        }
+      }
+
       for (let i = plinkoBalls.length - 1; i >= 0; i--) {
         let b = plinkoBalls[i];
         b.vy += 0.22;
@@ -683,10 +804,10 @@
           let dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < b.r + p.r) {
             let angle = Math.atan2(dy, dx);
-            let speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy) * 0.6;
-            let scatter = (Math.random() - 0.5) * 0.5;
-            b.vx = Math.cos(angle + scatter) * (speed + 0.8);
-            b.vy = Math.sin(angle + scatter) * (speed + 0.8);
+            let speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy) * 0.55;
+            let scatter = (Math.random() - 0.5) * 0.6;
+            b.vx = Math.cos(angle + scatter) * (speed + 0.7);
+            b.vy = Math.sin(angle + scatter) * (speed + 0.7);
             b.x = p.x + Math.cos(angle) * (b.r + p.r + 0.5);
             b.y = p.y + Math.sin(angle) * (b.r + p.r + 0.5);
           }
@@ -708,7 +829,7 @@
         }
 
         ctx.fillStyle = '#ef4444';
-        ctx.shadowColor = '#ef4444'; ctx.shadowBlur = 8;
+        ctx.shadowColor = '#ef4444'; ctx.shadowBlur = 6;
         ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill();
         ctx.shadowBlur = 0;
       }
@@ -718,7 +839,7 @@
 
     function playPlinko() {
       const bet = checkBet(); if (!bet) return; updateBalance(-bet);
-      const startX = 190 + (Math.random() - 0.5) * 12;
+      const startX = 190 + (Math.random() - 0.5) * 15;
       plinkoBalls.push({ x: startX, y: 15, vx: (Math.random() - 0.5) * 0.8, vy: 0, r: 6, bet: bet });
       showMsg("Kugel geworfen...", "");
     }
@@ -783,15 +904,15 @@
     }
 
     const wheelSlices = [
-      { label: '2x', mult: 2, color: '#f59e0b', isWin: true },
-      { label: '0x', mult: 0, color: '#334155', isWin: false },
-      { label: '0x', mult: 0, color: '#1e293b', isWin: false },
-      { label: '1.5x', mult: 1.5, color: '#10b981', isWin: true },
-      { label: '0x', mult: 0, color: '#334155', isWin: false },
-      { label: '0x', mult: 0, color: '#1e293b', isWin: false },
-      { label: '3x', mult: 3, color: '#8b5cf6', isWin: true },
-      { label: '0x', mult: 0, color: '#334155', isWin: false },
-      { label: '0x', mult: 0, color: '#1e293b', isWin: false }
+      { label: '2x', mult: 2, color: '#f59e0b' },
+      { label: '0x', mult: 0, color: '#334155' },
+      { label: '0x', mult: 0, color: '#1e293b' },
+      { label: '1.5x', mult: 1.5, color: '#10b981' },
+      { label: '0x', mult: 0, color: '#334155' },
+      { label: '0x', mult: 0, color: '#1e293b' },
+      { label: '3x', mult: 3, color: '#8b5cf6' },
+      { label: '0x', mult: 0, color: '#334155' },
+      { label: '0x', mult: 0, color: '#1e293b' }
     ];
     let currentWheelAngle = 0;
 
@@ -1002,6 +1123,7 @@
       initNav();
       renderGame();
       updateBalance(0);
+      setTimeout(drawBalanceChart, 200);
     }
   </script>
 </body>
