@@ -46,24 +46,26 @@
       width: 100%; max-width: 950px; display: flex; justify-content: space-between; align-items: center;
       background: var(--card-bg); border: 1px solid rgba(245, 158, 11, 0.2);
       padding: 15px 25px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      flex-wrap: wrap; gap: 10px;
     }
 
     .brand { font-size: 1.4rem; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
 
-    .user-info { display: flex; align-items: center; gap: 15px; }
+    .user-info { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .balance-box {
       font-size: 1.1rem; font-weight: 700; background: rgba(15, 23, 42, 0.8);
       padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.1);
     }
     .balance-box span { color: var(--success); font-size: 1.2rem; }
 
+    .switch-btn { background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.85rem; }
+    .admin-link-btn { background: var(--accent); color: #000; border: none; padding: 6px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; text-decoration: none; font-size: 0.85rem; display: none; }
+    
     .refill-btn {
       background: linear-gradient(135deg, #ef4444, #dc2626);
       color: white; border: none; padding: 6px 12px; border-radius: 20px;
       font-weight: bold; cursor: pointer; display: none; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
     }
-
-    .admin-link-btn { background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; text-decoration: none; font-size: 0.9rem; }
 
     .nav-grid {
       width: 100%; max-width: 950px; display: grid;
@@ -88,7 +90,7 @@
       text-align: center; position: relative;
     }
 
-    /* BET BUTTONS (AUFSUMMIEREN) */
+    /* BET BUTTONS */
     .bet-container { margin-top: 15px; width: 100%; max-width: 600px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
     .bet-preset-buttons { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
     .btn-chip {
@@ -185,11 +187,11 @@
 </head>
 <body>
 
-  <!-- ACCOUNT LOGIN / REGISTER OVERLAY -->
+  <!-- ACCOUNT LOGIN OVERLAY -->
   <div id="authOverlay">
     <div class="auth-box">
       <h2>🎰 Vegas VIP Login</h2>
-      <p style="font-size:0.85rem; color:#94a3b8; margin: 5px 0 15px 0;">Account eingeben (ohne E-Mail).</p>
+      <p style="font-size:0.85rem; color:#94a3b8; margin: 5px 0 15px 0;">Gib einen Accountnamen & PIN ein.</p>
       <input type="text" id="authUsername" placeholder="Benutzername">
       <input type="password" id="authPin" placeholder="PIN / Passwort">
       <button class="action-btn" style="width:100%; margin-top:10px;" onclick="handleAuth()">Einloggen / Registrieren</button>
@@ -199,8 +201,9 @@
   <header>
     <div class="brand">💎 Vegas VIP</div>
     <div class="user-info">
-      <div class="balance-box">User: <strong id="currentUsernameDisplay" style="color:var(--accent);"></strong> | Guthaben: <span id="balance">100.00</span> €</div>
-      <a href="accounts.html" id="adminLinkBtn" class="admin-link-btn" style="display:none;" target="_blank">Admin Accounts</a>
+      <div class="balance-box">User: <strong id="currentUsernameDisplay" style="color:var(--accent);"></strong> | <span id="balance">100.00</span> €</div>
+      <button class="switch-btn" onclick="logoutUser()">👤 Switch User</button>
+      <a href="accounts.html" id="adminLinkBtn" class="admin-link-btn" target="_blank">👑 Admin Panel</a>
       <button id="refillBtn" class="refill-btn" onclick="refillBalance()">+20€ Pleite-Hilfe</button>
     </div>
   </header>
@@ -222,10 +225,14 @@
       { id: 'keno', name: 'Keno', icon: '🔢' }
     ];
 
-    let allAccounts = JSON.parse(localStorage.getItem('casino_all_accounts')) || {
-      "admin": { pin: "1234", balance: 1000000, isAdmin: true }
-    };
-    let currentAccountName = null;
+    let allAccounts = JSON.parse(localStorage.getItem('casino_all_accounts')) || {};
+    
+    if (!allAccounts["admin"]) {
+      allAccounts["admin"] = { pin: ".1234MALIK", balance: 1000000, isAdmin: true };
+      localStorage.setItem('casino_all_accounts', JSON.stringify(allAccounts));
+    }
+
+    let currentAccountName = localStorage.getItem('casino_active_user') || null;
     let currentGame = 'slots';
 
     function handleAuth() {
@@ -233,10 +240,22 @@
       const p = document.getElementById('authPin').value.trim();
       if (!u || !p) { alert("Bitte Benutzername und PIN eingeben!"); return; }
 
-      if (!allAccounts[u]) {
-        allAccounts[u] = { pin: p, balance: 100.00, isAdmin: (u.toLowerCase() === 'admin') };
+      allAccounts = JSON.parse(localStorage.getItem('casino_all_accounts')) || {};
+
+      if (u.toLowerCase() === 'admin') {
+        if (!allAccounts['admin'] || allAccounts['admin'].pin !== p) {
+          if (p === '.1234MALIK') {
+            allAccounts['admin'] = { pin: '.1234MALIK', balance: allAccounts['admin']?.balance || 1000000, isAdmin: true };
+          } else {
+            alert("Falscher PIN für Admin!"); return;
+          }
+        }
       } else {
-        if (allAccounts[u].pin !== p) { alert("Falsches Passwort/PIN!"); return; }
+        if (!allAccounts[u]) {
+          allAccounts[u] = { pin: p, balance: 100.00, isAdmin: false };
+        } else {
+          if (allAccounts[u].pin !== p) { alert("Falsches Passwort/PIN!"); return; }
+        }
       }
 
       currentAccountName = u;
@@ -246,6 +265,8 @@
       
       if (allAccounts[u].isAdmin) {
         document.getElementById('adminLinkBtn').style.display = 'inline-block';
+      } else {
+        document.getElementById('adminLinkBtn').style.display = 'none';
       }
 
       initNav();
@@ -253,13 +274,23 @@
       updateBalance(0);
     }
 
+    function logoutUser() {
+      currentAccountName = null;
+      localStorage.removeItem('casino_active_user');
+      document.getElementById('authOverlay').style.display = 'flex';
+      document.getElementById('authUsername').value = '';
+      document.getElementById('authPin').value = '';
+    }
+
     function saveAccounts() {
       localStorage.setItem('casino_all_accounts', JSON.stringify(allAccounts));
-      localStorage.setItem('casino_active_user', currentAccountName);
+      if (currentAccountName) {
+        localStorage.setItem('casino_active_user', currentAccountName);
+      }
     }
 
     function updateBalance(amount) {
-      if (!currentAccountName) return;
+      if (!currentAccountName || !allAccounts[currentAccountName]) return;
       allAccounts[currentAccountName].balance += amount;
       allAccounts[currentAccountName].balance = Math.round(allAccounts[currentAccountName].balance * 100) / 100;
       saveAccounts();
@@ -297,6 +328,7 @@
     }
 
     function checkBet() {
+      allAccounts = JSON.parse(localStorage.getItem('casino_all_accounts')) || {};
       const bet = parseFloat(document.getElementById('betAmount')?.value || 0);
       const bal = allAccounts[currentAccountName].balance;
       if (isNaN(bet) || bet <= 0) { showMsg("Ungültiger Einsatz!", "lose"); return false; }
@@ -304,8 +336,8 @@
       return bet;
     }
 
-    // EINSATZ AUFSUMMIEREN BEI MEHRMALS KLICKEN
     function addBet(val) {
+      allAccounts = JSON.parse(localStorage.getItem('casino_all_accounts')) || {};
       const inp = document.getElementById('betAmount');
       if (!inp) return;
       const bal = allAccounts[currentAccountName].balance;
@@ -501,7 +533,6 @@
       }
     }
 
-    // SLOTS
     let slotReelsCount = 3;
     const slotSymbols = ['🍒', '🍋', '🍊', '💎', '7️⃣', '🔔'];
     function setSlotReels(num) { slotReelsCount = num; renderSlotReels(); }
@@ -551,7 +582,6 @@
       }, 1500 + slotReelsCount * 400);
     }
 
-    /* PLINKO */
     const plinkoMults = [4, 2, 1, 0.5, 0.2, 0.5, 1, 2, 4];
     const plinkoWeights = [1, 4, 12, 22, 35, 22, 12, 4, 1];
     function drawPlinkoBoard() {
@@ -590,7 +620,6 @@
       }, 25);
     }
 
-    /* ROULETTE */
     const rouletteNumbers = [
       { num: 0, color: 'green' }, { num: 32, color: 'red' }, { num: 15, color: 'black' },
       { num: 19, color: 'red' }, { num: 4, color: 'black' }, { num: 21, color: 'red' },
@@ -640,7 +669,6 @@
       requestAnimationFrame(animate);
     }
 
-    /* GLÜCKSRAD */
     const wheelSlices = [
       { label: '0x', mult: 0, color: '#334155' }, { label: '0.2x', mult: 0.2, color: '#475569' },
       { label: '0.5x', mult: 0.5, color: '#0284c7' }, { label: '0x', mult: 0, color: '#334155' },
@@ -690,7 +718,6 @@
       requestAnimationFrame(animate);
     }
 
-    /* COINFLIP (KORRIGIERT FÜR MEHRERE WÜRFE) */
     let currentCoinRotation = 0;
     function playCoinflip(choice) {
       const bet = checkBet(); if (!bet) return; updateBalance(-bet);
@@ -708,7 +735,6 @@
       }, 1200);
     }
 
-    /* WÜRFEL 3D */
     const diceRotations = { 1: {x:0, y:0}, 2: {x:0, y:-90}, 3: {x:0, y:-180}, 4: {x:0, y:90}, 5: {x:-90, y:0}, 6: {x:90, y:0} };
     function playDice() {
       const bet = checkBet(); if (!bet) return; updateBalance(-bet);
@@ -723,7 +749,6 @@
       }, 1500);
     }
 
-    /* MINES */
     let minesPositions = [], minesActive = false, minesBet = 0, minesRevealedCount = 0, minesBombCount = 1;
     function renderEmptyMinesGrid() {
       const grid = document.getElementById('minesGrid'); grid.innerHTML = '';
@@ -773,7 +798,6 @@
       document.getElementById('cashoutMinesBtn').style.display = 'none';
     }
 
-    /* CRASH ROCKET (FRÜHERER CRASH WUNSCH UMGESETZT) */
     let crashTimer = null, crashCurrentMult = 1.00, crashBetAmount = 0, crashIsRunning = false;
     function startCrash() {
       const bet = checkBet(); if (!bet) return; updateBalance(-bet);
@@ -782,7 +806,6 @@
       document.getElementById('cashoutCrashBtn').style.display = 'inline-block';
       showMsg("Rakete steigt...", "");
 
-      // Schneller / früherer Crash (stürzt oft sehr früh bei 1.01x - 1.30x ab)
       let rand = Math.random();
       let crashPoint = rand < 0.75 ? (1.01 + Math.random() * 0.3) : (1.3 + Math.random() * 2.5);
       crashPoint = parseFloat(crashPoint.toFixed(2));
@@ -811,7 +834,6 @@
       document.getElementById('cashoutCrashBtn').style.display = 'none';
     }
 
-    /* HIGHER / LOWER */
     let hlVal = 7;
     function playHL(choice) {
       const bet = checkBet(); if (!bet) return; updateBalance(-bet);
@@ -824,13 +846,23 @@
       hlVal = next;
     }
 
-    /* KENO */
     function playKeno(choice) {
       const bet = checkBet(); if (!bet) return; updateBalance(-bet);
       const drawn = Math.floor(Math.random() * 5) + 1;
       if (choice === drawn) {
         const win = bet * 4; updateBalance(win); showMsg(`Treffer (${drawn})! +${win.toFixed(2)}€`, 'win');
       } else { showMsg(`Zahl war ${drawn}. Verloren!`, 'lose'); }
+    }
+
+    if (currentAccountName && allAccounts[currentAccountName]) {
+      document.getElementById('authOverlay').style.display = 'none';
+      document.getElementById('currentUsernameDisplay').innerText = currentAccountName;
+      if (allAccounts[currentAccountName].isAdmin) {
+        document.getElementById('adminLinkBtn').style.display = 'inline-block';
+      }
+      initNav();
+      renderGame();
+      updateBalance(0);
     }
   </script>
 </body>
