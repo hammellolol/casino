@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vegas Online Casino</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --accent: #f59e0b;
+      --accent-hover: #d97706;
+      --text: #f8fafc;
+      --danger: #ef4444;
+      --success: #10b981;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 15px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+    
+    header { width: 100%; max-width: 900px; display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 15px 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+    .balance-box { font-size: 1.3rem; font-weight: bold; color: var(--accent); }
+    
+    .refill-btn { background: var(--danger); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; display: none; }
+    .refill-btn:hover { opacity: 0.9; }
+
+    .nav-grid { width: 100%; max-width: 900px; display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-bottom: 20px; }
+    .nav-btn { background: var(--card); color: var(--text); border: 2px solid transparent; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.2s; text-align: center; }
+    .nav-btn.active { border-color: var(--accent); background: #334155; }
+    
+    .game-container { width: 100%; max-width: 900px; background: var(--card); border-radius: 12px; padding: 20px; min-height: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+    
+    .controls { margin-top: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; }
+    input[type="number"] { width: 90px; padding: 8px; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: white; text-align: center; font-size: 1rem; }
+    button.action-btn { background: var(--accent); color: #000; font-weight: bold; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 1rem; }
+    button.action-btn:hover { background: var(--accent-hover); }
+
+    /* Custom CSS for Mini Games */
+    .slot-machine { display: flex; gap: 10px; font-size: 4rem; background: #0f172a; padding: 20px 30px; border-radius: 12px; border: 2px solid var(--accent); }
+    canvas { background: #0f172a; border-radius: 8px; max-width: 100%; }
+    .card-display { font-size: 3rem; margin: 15px; }
+    .grid-3x3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .grid-btn { width: 70px; height: 70px; background: #334155; border: none; border-radius: 8px; font-size: 1.5rem; color: white; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div>🎰 <strong>Vegas Casino</strong></div>
+    <div class="balance-box">Guthaben: <span id="balance">100</span> €</div>
+    <button id="refillBtn" class="refill-btn" onclick="refillBalance()">+20€ Pleite-Hilfe</button>
+  </header>
+
+  <div class="nav-grid">
+    <button class="nav-btn active" onclick="switchGame('slots')">🎰 Slots</button>
+    <button class="nav-btn" onclick="switchGame('plinko')">⚪ Plinko</button>
+    <button class="nav-btn" onclick="switchGame('roulette')">🎡 Roulette</button>
+    <button class="nav-btn" onclick="switchGame('blackjack')">🃏 Blackjack</button>
+    <button class="nav-btn" onclick="switchGame('coinflip')">🪙 Coinflip</button>
+    <button class="nav-btn" onclick="switchGame('mines')">💣 Mines</button>
+    <button class="nav-btn" onclick="switchGame('dice')">🎲 Dice</button>
+    <button class="nav-btn" onclick="switchGame('wheel')">🎡 Glücksrad</button>
+    <button class="nav-btn" onclick="switchGame('higherlower')">📈 Höher/Tiefer</button>
+    <button class="nav-btn" onclick="switchGame('keno')">🔢 Keno</button>
+  </div>
+
+  <div class="game-container" id="gameContainer">
+    <!-- Aktuelles Spiel wird hier geladen -->
+  </div>
+
+  <script>
+    let balance = parseFloat(localStorage.getItem('casino_balance')) || 100;
+    let currentGame = 'slots';
+
+    function updateBalance(amount) {
+      balance += amount;
+      balance = Math.round(balance * 100) / 100;
+      localStorage.setItem('casino_balance', balance);
+      document.getElementById('balance').innerText = balance.toFixed(2);
+      
+      const refillBtn = document.getElementById('refillBtn');
+      if (balance <= 0) {
+        refillBtn.style.display = 'block';
+      } else {
+        refillBtn.style.display = 'none';
+      }
+    }
+
+    function refillBalance() {
+      if (balance <= 0) {
+        updateBalance(20);
+      }
+    }
+
+    function switchGame(game) {
+      currentGame = game;
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      renderGame();
+    }
+
+    function getBetInput() {
+      return `
+        <div class="controls">
+          <label>Einsatz (€): </label>
+          <input type="number" id="betAmount" value="5" min="1" max="${balance}">
+        </div>
+      `;
+    }
+
+    function renderGame() {
+      const container = document.getElementById('gameContainer');
+      container.innerHTML = '';
+
+      if (currentGame === 'slots') {
+        container.innerHTML = `
+          <h2>Slots</h2>
+          <div class="slot-machine" id="slotDisplay">🍒 🍋 🍊</div>
+          ${getBetInput()}
+          <br>
+          <button class="action-btn" onclick="playSlots()">Drehen</button>
+        `;
+      } else if (currentGame === 'plinko') {
+        container.innerHTML = `
+          <h2>Plinko</h2>
+          <canvas id="plinkoCanvas" width="300" height="300"></canvas>
+          ${getBetInput()}
+          <br>
+          <button class="action-btn" onclick="playPlinko()">Kugel werfen</button>
+        `;
+        drawPlinkoBoard();
+      } else if (currentGame === 'roulette') {
+        container.innerHTML = `
+          <h2>Roulette</h2>
+          <canvas id="rouletteCanvas" width="250" height="250"></canvas>
+          ${getBetInput()}
+          <div class="controls">
+            <button class="action-btn" style="background:#ef4444;color:white" onclick="playRoulette('red')">Rot</button>
+            <button class="action-btn" style="background:#10b981;color:white" onclick="playRoulette('green')">0 (Grün)</button>
+            <button class="action-btn" style="background:#334155;color:white" onclick="playRoulette('black')">Schwarz</button>
+          </div>
+        `;
+        drawRouletteWheel(0);
+      } else if (currentGame === 'coinflip') {
+        container.innerHTML = `
+          <h2>Münzwurf</h2>
+          <div style="font-size: 5rem;" id="coinDisplay">🪙</div>
+          ${getBetInput()}
+          <div class="controls">
+            <button class="action-btn" onclick="playCoinflip('Kopf')">Kopf</button>
+            <button class="action-btn" onclick="playCoinflip('Zahl')">Zahl</button>
+          </div>
+        `;
+      } else if (currentGame === 'dice') {
+        container.innerHTML = `
+          <h2>Würfel (Über 3.5 gewinnt)</h2>
+          <div style="font-size: 4rem;" id="diceDisplay">🎲</div>
+          ${getBetInput()}
+          <br>
+          <button class="action-btn" onclick="playDice()">Würfeln</button>
+        `;
+      } else if (currentGame === 'mines') {
+        container.innerHTML = `
+          <h2>Mines (3x3 Grid - 1 Mine)</h2>
+          <div class="grid-3x3" id="minesGrid"></div>
+          ${getBetInput()}
+          <br>
+          <button class="action-btn" onclick="startMines()">Neues Spiel</button>
+        `;
+        initMines();
+      } else if (currentGame === 'blackjack') {
+        container.innerHTML = `
+          <h2>Blackjack (Vereinfacht)</h2>
+          <div id="bjStatus">Drücke Start</div>
+          ${getBetInput()}
+          <br>
+          <button class="action-btn" onclick="playBlackjack()">Spielen</button>
+        `;
+      } else if (currentGame === 'wheel') {
+        container.innerHTML = `
+          <h2>Glücksrad</h2>
+          <div style="font-size: 4rem;" id="wheelDisplay">🎯</div>
+          ${getBetInput()}
+          <br>
+          <button class="action-btn" onclick="playWheel()">Drehen</button>
+        `;
+      } else if (currentGame === 'higherlower') {
+        container.innerHTML = `
+          <h2>Höher oder Tiefer</h2>
+          <div class="card-display" id="hlCard">❓</div>
+          ${getBetInput()}
+          <div class="controls">
+            <button class="action-btn" onclick="playHL('higher')">Höher</button>
+            <button class="action-btn" onclick="playHL('lower')">Tiefer</button>
+          </div>
+        `;
+      } else if (currentGame === 'keno') {
+        container.innerHTML = `
+          <h2>Keno (Wähle eine Glückszahl 1-5)</h2>
+          <div class="controls">
+            <button class="action-btn" onclick="playKeno(1)">1</button>
+            <button class="action-btn" onclick="playKeno(2)">2</button>
+            <button class="action-btn" onclick="playKeno(3)">3</button>
+            <button class="action-btn" onclick="playKeno(4)">4</button>
+            <button class="action-btn" onclick="playKeno(5)">5</button>
+          </div>
+          ${getBetInput()}
+        `;
+      }
+    }
+
+    /* --- GAME LOGIC --- */
+    function checkBet() {
+      const bet = parseFloat(document.getElementById('betAmount')?.value || 0);
+      if (isNaN(bet) || bet <= 0 || bet > balance) {
+        alert("Ungültiger Einsatz oder nicht genug Guthaben!");
+        return false;
+      }
+      return bet;
+    }
+
+    // SLOTS
+    function playSlots() {
+      const bet = checkBet();
+      if (!bet) return;
+      updateBalance(-bet);
+
+      const symbols = ['🍒', '🍋', '🍊', '🔔', '💎'];
+      const s1 = symbols[Math.floor(Math.random() * symbols.length)];
+      const s2 = symbols[Math.floor(Math.random() * symbols.length)];
+      const s3 = symbols[Math.floor(Math.random() * symbols.length)];
+
+      document.getElementById('slotDisplay').innerText = `${s1} ${s2} ${s3}`;
+
+      if (s1 === s2 && s2 === s3) {
+        const win = bet * 5;
+        updateBalance(win);
+        alert(`JACKPOT! Du gewinnst ${win}€!`);
+      } else if (s1 === s2 || s2 === s3 || s1 === s3) {
+        const win = bet * 1.5;
+        updateBalance(win);
+        alert(`2 Gleiche! Du gewinnst ${win}€!`);
+      }
+    }
+
+    // PLINKO
+    function drawPlinkoBoard() {
+      const cvs = document.getElementById('plinkoCanvas');
+      if (!cvs) return;
+      const ctx = cvs.getContext('2d');
+      ctx.clearRect(0, 0, 300, 300);
+
+      // Pins
+      ctx.fillStyle = '#fff';
+      for (let r = 2; r <= 6; r++) {
+        for (let c = 0; c <= r; c++) {
+          ctx.beginPath();
+          ctx.arc(150 - (r * 15) + (c * 30), r * 35, 4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // Multipliers (Mit zwei 1x in der Mitte!)
+      const mults = ['5x', '2x', '1x', '1x', '2x', '5x'];
+      ctx.font = '12px sans-serif';
+      ctx.textAlign = 'center';
+      for (let i = 0; i < mults.length; i++) {
+        ctx.fillStyle = i === 2 || i === 3 ? '#f59e0b' : '#10b981';
+        ctx.fillText(mults[i], 25 + i * 50, 280);
+      }
+    }
+
+    function playPlinko() {
+      const bet = checkBet();
+      if (!bet) return;
+      updateBalance(-bet);
+
+      const multipliers = [5, 2, 1, 1, 2, 5];
+      const landingIndex = Math.floor(Math.random() * multipliers.length);
+      const mult = multipliers[landingIndex];
+      const win = bet * mult;
+
+      drawPlinkoBoard();
+      const cvs = document.getElementById('plinkoCanvas');
+      const ctx = cvs.getContext('2d');
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(25 + landingIndex * 50, 260, 8, 0, Math.PI * 2);
+      ctx.fill();
+
+      setTimeout(() => {
+        updateBalance(win);
+        alert(`Kugel gelandet auf ${mult}x! Gewinn: ${win}€`);
+      }, 100);
+    }
+
+    // ROULETTE
+    function drawRouletteWheel(angle) {
+      const cvs = document.getElementById('rouletteCanvas');
+      if (!cvs) return;
+      const ctx = cvs.getContext('2d');
+      ctx.clearRect(0, 0, 250, 250);
+
+      const colors = ['#10b981', '#ef4444', '#334155']; // Green, Red, Black
+      const slices = 12;
+      const sliceAngle = (Math.PI * 2) / slices;
+
+      for (let i = 0; i < slices; i++) {
+        ctx.beginPath();
+        ctx.fillStyle = i === 0 ? colors[0] : (i % 2 === 0 ? colors[1] : colors[2]);
+        ctx.moveTo(125, 125);
+        ctx.arc(125, 125, 100, angle + i * sliceAngle, angle + (i + 1) * sliceAngle);
+        ctx.fill();
+      }
+
+      // Ball indicator
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(125, 35, 6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function playRoulette(choice) {
+      const bet = checkBet();
+      if (!bet) return;
+      updateBalance(-bet);
+
+      const rand = Math.random();
+      let resultColor = 'black';
+      if (rand < 0.08) resultColor = 'green';
+      else if (rand < 0.54) resultColor = 'red';
+
+      drawRouletteWheel(Math.random() * 5);
+
+      setTimeout(() => {
+        if (choice === resultColor) {
+          const mult = resultColor === 'green' ? 10 : 2;
+          const win = bet * mult;
+          updateBalance(win);
+          alert(`Kugel landet auf ${resultColor.toUpperCase()}! Gewinn: ${win}€`);
+        } else {
+          alert(`Kugel landet auf ${resultColor.toUpperCase()}. Verloren!`);
+        }
+      }, 200);
+    }
+
+    // COINFLIP
+    function playCoinflip(choice) {
+      const bet = checkBet();
+      if (!bet) return;
+      updateBalance(-bet);
+
+      const res = Math.random() < 0.5 ? 'Kopf' : 'Zahl';
+      document.getElementById('coinDisplay').innerText = res === 'Kopf' ? '🪙' : '🔢';
+
+      if (choice === res) {
+        const win = bet * 2;
+        updateBalance(win);
+        alert(`Richtig! Es war ${res}. Gewinn: ${win}€`);
+      } else {
+        alert(`Falsch! Es war ${res}.`);
+      }
+    }
+
+    // DICE
+    function playDice() {
+      const bet = checkBet();
+      if (!bet) return;
+      updateBalance(-bet);
+
+      const roll = Math.floor(Math.random() * 6) + 1;
+      document.getElementById('diceDisplay').innerText = roll;
+
+      if (roll > 3) {
+        const win = bet * 1.8;
+        updateBalance(win);
+        alert(`Gewonnen! Gewürfelt: ${roll}. Gewinn: ${win}€`);
+      } else {
+        alert(`Verloren! Gewürfelt: ${roll}.`);
+      }
+    }
+
+    // MINES
+    let minePosition = -1;
+    function initMines() {
+      const grid = document.getElementById('minesGrid');
+      grid.innerHTML = '';
+      minePosition = Math.floor(Math.random() * 9);
+
+      for (let i = 0; i < 9; i++) {
+        const btn = document.createElement('button');
+        btn.className = 'grid-btn';
+        btn.innerText = '❓';
+        btn.onclick = () => revealMine(i, btn);
+        grid.appendChild(btn);
+      }
+    }
+
+    function startMines() {
+      const bet = checkBet();
+      if (!bet) return;
+      initMines();
+    }
+
+    function revealMine(idx, btn) {
+      const bet = checkBet();
+      if (!bet) return;
+
+      if (idx === minePosition) {
+        btn.innerText = '💣';
+        btn.style.background = '#ef4444';
+        updateBalance(-bet);
+        alert('BOOM! Eine Mine getroffen. Einsatz verloren!');
+        initMines();
+      } else {
+        btn.innerText = '💎';
+        btn.style.background = '#10b981';
+        btn.disabled = true;
+        const win = bet * 1.3;
+        updateBalance(win - bet);
+        alert(`Diamant gefunden! +${(win - bet).toFixed(2)}€`);
+      }
+    }
+
+    // BLACKJACK
+    function playBlackjack() {
+      const bet = checkBet();
+      if (!bet) return;
+      updateBalance(-bet);
+
+      const pScore = Math.floor(Math.random() * 8) + 14; // 14-21
+      const dScore = Math.floor(Math.random() * 8) + 14;
+
+      let msg = `Deine Punkte: ${pScore} | Dealer Punkte: ${dScore} -> `;
+      if (pScore > 21) {
+        msg += "Überkauft! Verloren.";
+      } else if (dScore > 21 || pScore > dScore) {
+        const win = bet * 2;
+        updateBalance(win);
+        msg += `Gewonnen! +${win}€`;
+      } else if (pScore === dScore) {
+        updateBalance(bet);
+        msg += "Unentschieden! Einsatz zurück.";
+      } else {
+        msg += "Dealer gewinnt!";
+      }
+
+      document.getElementById('bjStatus').innerText = msg;
+    }
+
+    // WHEEL
+    function playWheel() {
+      const bet = checkBet();
+      if (!bet) return;
+      updateBalance(-bet);
+
+      const mults = [0, 0.5, 1, 1.5, 2, 5];
+      const m = mults[Math.floor(Math.random() * mults.length)];
+      const win = bet * m;
+
+      updateBalance(win);
+      alert(`Das Rad stoppt bei ${m}x! Gewinn: ${win}€`);
+    }
+
+    // HIGHER / LOWER
+    let currentCard = 7;
+    function playHL(choice) {
+      const bet = checkBet();
+      if (!bet) return;
+      updateBalance(-bet);
+
+      const nextCard = Math.floor(Math.random() * 12) + 1;
+      document.getElementById('hlCard').innerText = nextCard;
+
+      if ((choice === 'higher' && nextCard >= currentCard) || (choice === 'lower' && nextCard <= currentCard)) {
+        const win = bet * 1.8;
+        updateBalance(win);
+        alert(`Richtig! Karte war ${nextCard}. Gewinn: ${win}€`);
+      } else {
+        alert(`Falsch! Karte war ${nextCard}.`);
+      }
+      currentCard = nextCard;
+    }
+
+    // KENO
+    function playKeno(chosenNumber) {
+      const bet = checkBet();
+      if (!bet) return;
+      updateBalance(-bet);
+
+      const drawnNumber = Math.floor(Math.random() * 5) + 1;
+      if (chosenNumber === drawnNumber) {
+        const win = bet * 4;
+        updateBalance(win);
+        alert(`Treffer! Gezogene Zahl: ${drawnNumber}. Gewinn: ${win}€`);
+      } else {
+        alert(`Leider nicht! Gezogene Zahl war ${drawnNumber}.`);
+      }
+    }
+
+    // Initial Load
+    updateBalance(0);
+    renderGame();
+  </script>
+
+</body>
+</html>
